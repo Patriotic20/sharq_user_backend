@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .application import Application
+    from .passport_data import PassportData
 
 class User(Base):
     __tablename__ = "users"
@@ -14,6 +15,10 @@ class User(Base):
 
 
     application: Mapped["Application"] = relationship(
+        back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
+
+    passport_data: Mapped["PassportData"] = relationship(
         back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
 

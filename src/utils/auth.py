@@ -25,7 +25,7 @@ from src.db.session import get_db
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/user/auth/login",
+    tokenUrl="/api/auth/login",
     scopes={
         "me": "Read information about the current user.",
         "admin": "Full administrative access to all resources.",

@@ -7,11 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.session import get_db
 
 application_router = APIRouter(
+    tags=["Application"],
     prefix="/application"
 )
 
 
-@application_router.post()
+@application_router.post('/create')
 async def create_app(
     db: Annotated[AsyncSession , Depends(get_db)],
     current_user: Annotated[User , Security(get_current_user , scopes=["user"])]
