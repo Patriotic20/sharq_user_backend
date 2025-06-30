@@ -4,6 +4,7 @@ from fastapi.security import  OAuth2PasswordRequestForm
 from src.db.session import get_db
 from src.service.auth import UserAuthService
 from typing import  Annotated
+from src.service.application import create_application
 from src.schemas.user import RegisterData
 
 auth_router = APIRouter(
@@ -19,7 +20,8 @@ async def login(
         form_data: Annotated[OAuth2PasswordRequestForm , Depends()],
         service: Annotated[UserAuthService , Depends(get_auth_servie)]
 ):
-    return await service.login(form_data=form_data)
+    user_token = await service.login(form_data=form_data)
+    return user_token 
 
 
 @auth_router.post("/register")

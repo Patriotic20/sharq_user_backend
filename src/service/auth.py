@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from src.service import BasicCrud
+from src.service.application import create_application
 from src.utils import ( 
     hash_password,
     authenticate_user,
@@ -45,9 +46,9 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         access_token = create_access_token(
             data={"sub": user.phone_number, "scopes": form_data.scopes},
         )
+
         return Token(access_token=access_token, token_type="bearer")
 
-    async def refresh(self):
-        pass
+
 
 
