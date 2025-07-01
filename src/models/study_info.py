@@ -1,14 +1,22 @@
-from sqlalchemy.orm import Mapped , mapped_column
+from sqlalchemy.orm import Mapped , mapped_column , relationship
+from sqlalchemy import ForeignKey
 from src.db.base import Base
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .user import User
 
 class StudyInfo(Base):
     __tablename__ = "study_info"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     study_language: Mapped[str] = mapped_column(nullable=False)
     study_form: Mapped[str] = mapped_column(nullable=False)
     study_direction: Mapped[str] = mapped_column(nullable=False)
     exam_form: Mapped[str] = mapped_column(nullable=False)
+
+    user: Mapped["User"] = relationship(back_populates="study_info")
 
     def __repr__(self):
         return (
