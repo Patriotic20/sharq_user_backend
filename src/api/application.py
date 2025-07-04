@@ -1,21 +1,40 @@
-from src.service.application import create_application
-from fastapi import APIRouter , Security , Depends
-from src.models.user import User
-from src.utils.auth import get_current_user
+from fastapi import APIRouter, Depends, Query , Security
 from typing import Annotated
+from src.utils import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.db.session import get_db
+from src.service.application import ApplicationCrud
+from src.schemas.application import ApplicationResponse
+from sharq_models.models import User
+from sharq_models.db import get_db
 
 application_router = APIRouter(
-    tags=["Application"],
-    prefix="/application"
+    prefix="/application",
+    tags=["Application"]
 )
 
 
-@application_router.post('/create')
-async def create_app(
-    db: Annotated[AsyncSession , Depends(get_db)],
+def get_service_crud(db: AsyncSession = Depends(get_db)):
+    return ApplicationCrud(db)
+
+
+
+@application_router.post("/create",response_model=ApplicationResponse)
+async def application_create(
+    service: Annotated[ApplicationCrud, Depends(get_service_crud)],
     current_user: Annotated[User , Security(get_current_user , scopes=["user"])]
 ):
-    return await create_application(db=db , user_id=current_user.id)
+    return await service.application_creation(user_id=current_user.id)
+
+
+
+@application_router.get("/get_by_id/{applicationd_id}", response_model=ApplicationResponse)
+async def get_application_by_id(
+    applicationd_id: int,
+    service: Annotated[ApplicationCrud, Depends(get_service_crud)],
+    current_user: Annotated[User , Security(get_current_user , scopes=["user"])]
+):
+    return await service.get_application_with_nested_info(application_id=applicationd_id, user_id=current_user.id)
+     
+
+
 

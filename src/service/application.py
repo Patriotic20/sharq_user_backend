@@ -1,57 +1,158 @@
-from sqlalchemy import select , update , delete
-from src.models import Application
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.application import ApplicationStatus , Application
+from sqlalchemy import select, and_
+from sqlalchemy.orm import joinedload
+
+from src.service import BasicCrud
+from sharq_models.models import ( 
+    Application, 
+    PassportData, 
+    StudyInfo,
+    StudyDirection,
+    StudyLanguage,
+    StudyForm
+)
+from src.schemas.application import ApplicationBase, ApplicationResponse, ApplicationFilter
 
 
-async def create_application(db: AsyncSession, user_id: int | None = None):
-    new_app = Application(user_id=user_id)
-    db.add(new_app)
-    await db.commit()
-    await db.refresh(new_app)
-    return new_app
 
+class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
+    def __init__(self, db: AsyncSession):
+        super().__init__(db)
 
-async def get_by_id_application(db: AsyncSession, application_id: int, user_id: int | None = None):
-    stmt = select(Application).where(
-        Application.id == application_id,
-        Application.user_id == user_id if user_id is not None else True  # Optional user filtering
-    )
-    result = await db.execute(stmt)
-    return result.scalars().first()
+    async def application_creation(self, user_id: int) -> ApplicationResponse:
+        passport_data = await super().get_by_field(
+            model=PassportData, field_name="user_id", field_value=user_id
+        )
+        study_info = await super().get_by_field(
+            model=StudyInfo, field_name="user_id", field_value=user_id
+        )
 
+        if not passport_data or not study_info:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Passport yoki Ta'lim ma'lumotlari topilmadi"
+            )
 
-async def get_all_application(db: AsyncSession, user_id: int | None = None):
-    stmt = select(Application)
-    if user_id is not None:
-        stmt = stmt.where(Application.user_id == user_id)
-    result = await db.execute(stmt)
-    return result.scalars().all()
+        # Check for existing application
+        stmt = select(Application).where(
+            Application.passport_data_id == passport_data.id,
+            Application.study_info_id == study_info.id
+        )
+        result = await self.db.execute(stmt)
+        existing = result.scalar_one_or_none()
 
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Bu foydalanuvchi uchun ariza allaqachon mavjud"
+            )
 
-async def update_application(
-    db: AsyncSession,
-    application_status: ApplicationStatus,
-    application_id: int,
-    user_id: int | None = None
-):
-    stmt = (
-        update(Application)
-        .where(Application.id == application_id)
-        .values(status=application_status)
-        .execution_options(synchronize_session="fetch")
-    )
+        # Create new application
+        application_data = ApplicationBase(
+            passport_data_id=passport_data.id,
+            study_info_id=study_info.id
+        )
+        return await super().create(model=Application, obj_items=application_data)
 
-    if user_id is not None:
-        stmt = stmt.where(Application.user_id == user_id)
+ 
 
-    await db.execute(stmt)
-    await db.commit()
+    async def get_application_with_nested_info(self, application_id: int, user_id: int | None = None):
+        stmt = (
+            select(Application)
+            .options(
+                joinedload(Application.passport_data),
+                joinedload(Application.study_info).joinedload(StudyInfo.study_form),
+                joinedload(Application.study_info).joinedload(StudyInfo.study_language),
+                joinedload(Application.study_info).joinedload(StudyInfo.study_direction),
+            )
+            .where(Application.id == application_id)
+        )
 
-async def delete_application(db: AsyncSession, application_id: int, user_id: int | None = None):
-    stmt = delete(Application).where(Application.id == application_id)
-    if user_id is not None:
-        stmt = stmt.where(Application.user_id == user_id)
+        # Ownership filter
+        if user_id is not None:
+            stmt = stmt.where(
+                Application.passport_data.has(PassportData.user_id == user_id),
+                Application.study_info.has(StudyInfo.user_id == user_id)
+            )
 
-    await db.execute(stmt)
-    await db.commit()
+        result = await self.db.execute(stmt)
+        application = result.scalars().first()
+
+        if not application:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+
+        return application
+
+    async def get_all_application_with_nested_info(
+        self,
+        filter_data: ApplicationFilter,
+        limit: int = 10,
+        offset: int = 0
+    ):
+        stmt = (
+            select(Application)
+            .options(
+                joinedload(Application.passport_data),
+                joinedload(Application.study_info).joinedload(StudyInfo.study_form),
+                joinedload(Application.study_info).joinedload(StudyInfo.study_language),
+                joinedload(Application.study_info).joinedload(StudyInfo.study_direction),
+            )
+        )
+
+        filters = []
+
+        # PassportData filters
+        if filter_data.passport_series_number:
+            filters.append(Application.passport_data.has(PassportData.passport_series_number == filter_data.passport_series_number))
+        if filter_data.issue_date:
+            filters.append(Application.passport_data.has(PassportData.issue_date == filter_data.issue_date))
+        if filter_data.issuing_authority:
+            filters.append(Application.passport_data.has(PassportData.issuing_authority == filter_data.issuing_authority))
+        if filter_data.authority_code:
+            filters.append(Application.passport_data.has(PassportData.authority_code == filter_data.authority_code))
+        if filter_data.place_of_birth:
+            filters.append(Application.passport_data.has(PassportData.place_of_birth == filter_data.place_of_birth))
+        if filter_data.date_of_birth:
+            filters.append(Application.passport_data.has(PassportData.date_of_birth == filter_data.date_of_birth))
+        if filter_data.gender:
+            filters.append(Application.passport_data.has(PassportData.gender == filter_data.gender))
+        if filter_data.nationality:
+            filters.append(Application.passport_data.has(PassportData.nationality == filter_data.nationality))
+
+        # StudyInfo filters
+        if filter_data.study_direction_name:
+            filters.append(Application.study_info.has(StudyInfo.study_direction.has(StudyDirection.name == filter_data.study_direction_name)))
+        if filter_data.study_form_name:
+            filters.append(Application.study_info.has(StudyInfo.study_form.has(StudyForm.name == filter_data.study_form_name)))
+        if filter_data.study_language_name:
+            filters.append(Application.study_info.has(StudyInfo.study_language.has(StudyLanguage.name == filter_data.study_language_name)))
+
+        if filters:
+            stmt = stmt.where(and_(*filters))
+
+        stmt = stmt.limit(limit).offset(offset)
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+    async def delete_application(self, application_id: int, user_id: int | None = None):
+        stmt = select(Application).where(Application.id == application_id)
+
+        if user_id is not None:
+            stmt = stmt.where(
+                Application.passport_data.has(PassportData.user_id == user_id)
+            )
+
+        result = await self.db.execute(stmt)
+        application = result.scalars().first()
+
+        if not application:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Ariza topilmadi yoki sizga tegishli emas"
+            )
+
+        await self.db.delete(application)
+        await self.db.commit()
+        return {"detail": "Ariza muvaffaqiyatli o'chirildi"}

@@ -9,14 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from src.service import BasicCrud
-from src.service.application import create_application
 from src.utils import ( 
     hash_password,
     authenticate_user,
     create_access_token
     )
 from src.schemas.user import  Token , RegisterData
-from src.models import User
+from sharq_models.models import User
 
 
 class UserAuthService(BasicCrud[User, RegisterData]):

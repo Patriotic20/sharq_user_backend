@@ -1,6 +1,6 @@
 from fastapi import  HTTPException , status
 from src.service import  BasicCrud
-from src.models import PassportData , User
+from sharq_models.models import PassportData , User
 from src.schemas.passport_data import PassportDataBase , PassportDataUpdate , PassportDataCreate
 from sqlalchemy.ext.asyncio import  AsyncSession
 

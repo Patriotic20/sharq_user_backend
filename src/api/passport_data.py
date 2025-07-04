@@ -6,8 +6,8 @@ from src.schemas.passport_data import (
     PassportDataResponse ,
     PassportDataUpdate
 )
-from src.db.session import get_db
-from src.models import  User
+from sharq_models.db import get_db
+from sharq_models.models import  User
 from src.utils import get_current_user
 from typing import  Annotated
 

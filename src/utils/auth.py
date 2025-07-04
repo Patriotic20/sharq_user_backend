@@ -17,10 +17,8 @@ from pydantic import ValidationError
 from jwt.exceptions import InvalidTokenError
 
 from src.schemas.user import  TokenData
-from src.models import User
-from src.db.config import settings
-from src.db.session import get_db
-
+from sharq_models.models import User
+from sharq_models.db import settings , get_db
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
