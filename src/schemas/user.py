@@ -3,6 +3,7 @@ from pydantic import BaseModel , field_validator
 class RegisterData(BaseModel):
     phone_number: str
     password:str
+    role_id: int
 
 class Token(BaseModel):
     access_token: str

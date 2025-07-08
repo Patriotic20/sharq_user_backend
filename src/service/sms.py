@@ -123,7 +123,7 @@ class SMSVerificationService:
                 status_code=400, detail="No active verification session found"
             )
 
-        if session.expires_at < datetime.now(datetime.UTC):
+        if session.expires_at < datetime.now():
             raise HTTPException(status_code=400, detail="Verification code has expired")
 
         if session.code != code:

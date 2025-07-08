@@ -24,7 +24,7 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 async def create_passport_data(
         passport_data_item: PassportDataBase,
         service: Annotated[PassportDataCrud , Depends(get_service_crud)],
-        current_user: Annotated[User , Depends(require_roles(["admin"]))]
+        current_user: Annotated[User , Depends(require_roles(["user"]))]
 ) -> PassportDataResponse:
     return await service.create_passport_data(passport_data_item=passport_data_item , user_id=current_user.id)
 
@@ -33,14 +33,14 @@ async def create_passport_data(
 async def get_by_passport_data_id(
         passport_data_id: int,
         service: Annotated[PassportDataCrud, Depends(get_service_crud)],
-        current_user: Annotated[User, Depends(require_roles(["admin"]))]
+        current_user: Annotated[User, Depends(require_roles(["user"]))]
 )-> PassportDataResponse:
     return await service.get_passport_data_by_id(passport_data_id=passport_data_id , user_id=current_user.id)
 
 @passport_data_router.get("/get_all")
 async def get_all_passport_data(
         service: Annotated[PassportDataCrud, Depends(get_service_crud)],
-        current_user: Annotated[User, Depends(require_roles(["admin"]))],
+        current_user: Annotated[User, Depends(require_roles(["user"]))],
         limit: int | None = 20,
         offset: int | None = 0,
 ) -> list[PassportDataResponse]:
@@ -51,7 +51,7 @@ async def update_passport_data(
         passport_data_id: int,
         passport_data_items: PassportDataUpdate,
         service: Annotated[PassportDataCrud, Depends(get_service_crud)],
-        current_user: Annotated[User, Depends(require_roles(["admin"]))],
+        current_user: Annotated[User, Depends(require_roles(["user"]))],
 ):
     return await service.update_passport_data(passport_data_id=passport_data_id ,  user_id=current_user.id , update_items=passport_data_items)
 
@@ -59,6 +59,6 @@ async def update_passport_data(
 async def delete_passport_data(
         passport_data_id: int,
         service: Annotated[PassportDataCrud, Depends(get_service_crud)],
-        current_user: Annotated[User, Depends(require_roles(["admin"]))],
+        current_user: Annotated[User, Depends(require_roles(["user"]))],
 ):
     return await service.delete_passport_data(passport_data_id=passport_data_id , user_id=current_user.id)

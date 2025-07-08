@@ -7,6 +7,7 @@ from fastapi.params import Depends
 from fastapi.security import (
     OAuth2PasswordBearer,
 )
+from sqlalchemy.orm import joinedload
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
@@ -44,7 +45,10 @@ async def authenticate_user(db: AsyncSession, username: str, password: str):
 
 
 async def get_user(db: AsyncSession, username: str):
-    stmt = select(User).where(User.phone_number == username)
+    stmt = select(User).options(
+        joinedload(User.role)
+    ).where(User.phone_number == username)
+    
     result = await db.execute(stmt)
     return result.scalars().first()
 

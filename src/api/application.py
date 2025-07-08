@@ -22,7 +22,7 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 @application_router.post("/create",response_model=ApplicationResponse)
 async def application_create(
     service: Annotated[ApplicationCrud, Depends(get_service_crud)],
-    current_user: Annotated[User, Depends(require_roles(["admin"]))],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
 ):
     return await service.application_creation(user_id=current_user.id)
 
@@ -32,7 +32,7 @@ async def application_create(
 async def get_application_by_id(
     applicationd_id: int,
     service: Annotated[ApplicationCrud, Depends(get_service_crud)],
-    current_user: Annotated[User, Depends(require_roles(["admin"]))],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
 ):
     return await service.get_application_with_nested_info(application_id=applicationd_id, user_id=current_user.id)
      

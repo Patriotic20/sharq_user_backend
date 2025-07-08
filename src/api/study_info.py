@@ -22,7 +22,7 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 async def create_study_info(
     study_info_item: StudyInfoBase,
     service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
-    current_user: Annotated[User, Depends(require_roles(["admin"]))]
+    current_user: Annotated[User, Depends(require_roles(["user"]))]
 ) -> StudyInfoResponse:
     return await service.create_study_info(obj_info=study_info_item, user_id=current_user.id)
 

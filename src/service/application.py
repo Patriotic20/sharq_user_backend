@@ -53,7 +53,10 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
             passport_data_id=passport_data.id,
             study_info_id=study_info.id
         )
-        return await super().create(model=Application, obj_items=application_data)
+        
+        application = await super().create(model=Application, obj_items=application_data)
+        
+        return ApplicationResponse.model_validate(application)
 
  
 
@@ -82,7 +85,7 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
         if not application:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
 
-        return application
+        return ApplicationResponse.model_validate(application)
 
     async def get_all_application_with_nested_info(
         self,
