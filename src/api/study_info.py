@@ -5,9 +5,9 @@ from src.schemas.study_info import (
     StudyInfoBase,
     StudyInfoResponse,
 )
-from sharq_models.db import get_db
+from src.core.db import get_db
 from sharq_models.models import User
-from src.utils import get_current_user
+from src.utils.auth import require_roles
 from typing import Annotated
 
 study_info_router = APIRouter(
@@ -22,7 +22,7 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 async def create_study_info(
     study_info_item: StudyInfoBase,
     service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
-    current_user: Annotated[User, Security(get_current_user, scopes=["user"])]
+    current_user: Annotated[User, Depends(require_roles(["admin"]))]
 ) -> StudyInfoResponse:
     return await service.create_study_info(obj_info=study_info_item, user_id=current_user.id)
 

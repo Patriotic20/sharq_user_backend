@@ -2,7 +2,7 @@ from typing import Generic, TypeVar, Type, Any
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select , and_
-from sharq_models.db import Base
+from src.core.db import Base
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional , Sequence
 

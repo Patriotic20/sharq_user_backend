@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.service.application import ApplicationCrud
 from src.schemas.application import ApplicationResponse
 from sharq_models.models import User
-from sharq_models.db import get_db
+from src.core.db import get_db
+from src.utils.auth import require_roles
 
 application_router = APIRouter(
     prefix="/application",
@@ -21,7 +22,7 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 @application_router.post("/create",response_model=ApplicationResponse)
 async def application_create(
     service: Annotated[ApplicationCrud, Depends(get_service_crud)],
-    current_user: Annotated[User , Security(get_current_user , scopes=["user"])]
+    current_user: Annotated[User, Depends(require_roles(["admin"]))],
 ):
     return await service.application_creation(user_id=current_user.id)
 
@@ -31,7 +32,7 @@ async def application_create(
 async def get_application_by_id(
     applicationd_id: int,
     service: Annotated[ApplicationCrud, Depends(get_service_crud)],
-    current_user: Annotated[User , Security(get_current_user , scopes=["user"])]
+    current_user: Annotated[User, Depends(require_roles(["admin"]))],
 ):
     return await service.get_application_with_nested_info(application_id=applicationd_id, user_id=current_user.id)
      
