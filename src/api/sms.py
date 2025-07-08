@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 
@@ -38,3 +38,8 @@ async def register_with_verification(
 ):
     result = await auth_service.register_with_verification(request)
     return RegisterWithVerificationResponse(**result)
+
+@sms_router.post("/callback")
+async def sms_callback(request: Request):
+    print(request.body)
+    return {"message": "SMS callback received"}
