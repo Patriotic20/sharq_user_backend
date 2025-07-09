@@ -18,7 +18,7 @@ class SMSService:
         self.base_url = settings.sms_base_url
         self.sender = settings.sms_sender
 
-    def generate_verification_code(self, length: int = 6) -> str:
+    def generate_verification_code(self, length: int = 4) -> str:
         return "".join(random.choices(string.digits, k=length))
 
     async def get_bearer_token(self) -> str:
@@ -71,8 +71,8 @@ class SMSService:
     async def send_verification_code(self, phone_number: str) -> str:
         code = self.generate_verification_code()
     
-        # message = f"Sharq University! Qabuldan o'tish uchun kod: {code}. 10 daqiqada o'zgaradi."
-        message = "This is test from Eskiz"
+        message = f"Sharq Universiteti. Qabuldan o'tish uchun tasdiqlash kod: {code}"
+        # message = "This is test from Eskiz"
 
         success = await self.send_sms(phone_number, message)
         if not success:

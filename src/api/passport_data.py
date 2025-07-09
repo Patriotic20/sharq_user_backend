@@ -1,4 +1,5 @@
-from fastapi import APIRouter , Depends , Security
+from fastapi import APIRouter , Depends , UploadFile , File , Form
+from datetime import date
 from src.service.passport_data import PassportDataCrud
 from sqlalchemy.ext.asyncio import  AsyncSession
 from src.schemas.passport_data import (
@@ -22,11 +23,34 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 
 @passport_data_router.post("/create")
 async def create_passport_data(
-        passport_data_item: PassportDataBase,
-        service: Annotated[PassportDataCrud , Depends(get_service_crud)],
-        current_user: Annotated[User , Depends(require_roles(["user"]))]
+    first_name: Annotated[str, Form()],
+    last_name: Annotated[str, Form()],
+    third_name: Annotated[str, Form()],
+    date_of_birth: Annotated[date, Form()],
+    passport_series_number: Annotated[str, Form()],
+    jshshir: Annotated[str, Form()],
+    issue_date: Annotated[date, Form()],
+    gender: Annotated[str, Form()],
+    file: Annotated[UploadFile, File(...)],
+    service: Annotated[PassportDataCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))]
 ) -> PassportDataResponse:
-    return await service.create_passport_data(passport_data_item=passport_data_item , user_id=current_user.id)
+    passport_data_item = PassportDataBase(
+        first_name=first_name,
+        last_name=last_name,
+        third_name=third_name,
+        date_of_birth=date_of_birth,
+        passport_series_number=passport_series_number,
+        jshshir=jshshir,
+        issue_date=issue_date,
+        gender=gender
+    )
+    return await service.create_passport_data(
+        passport_data_item=passport_data_item,
+        file=file,
+        user_id=current_user.id
+    )
+
 
 
 @passport_data_router.get("/get_by_id/{passport_data_id}")

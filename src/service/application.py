@@ -53,10 +53,27 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
             passport_data_id=passport_data.id,
             study_info_id=study_info.id
         )
-        
+
         application = await super().create(model=Application, obj_items=application_data)
-        
-        return ApplicationResponse.model_validate(application)
+
+        # Re-fetch with relationships
+        stmt = (
+            select(Application)
+            .options(
+                joinedload(Application.study_info)
+                .joinedload(StudyInfo.study_language),
+                joinedload(Application.study_info)
+                .joinedload(StudyInfo.study_form),
+                joinedload(Application.study_info)
+                .joinedload(StudyInfo.study_direction),
+                joinedload(Application.passport_data)
+            )
+            .where(Application.id == application.id)
+        )
+        result = await self.db.execute(stmt)
+        application_with_joins = result.scalar_one()
+
+        return ApplicationResponse.model_validate(application_with_joins)
 
  
 

@@ -1,31 +1,37 @@
-from pydantic import BaseModel
-from datetime import  date
+from pydantic import BaseModel , ConfigDict
+from datetime import date
+
 
 class PassportDataBase(BaseModel):
-    passport_series_number: str
-    issue_date: date
-    issuing_authority: str
-    authority_code: str
-    place_of_birth: str
+    first_name: str
+    last_name: str
+    third_name: str
     date_of_birth: date
+    passport_series_number: str
+    jshshir: str
+    issue_date: date
     gender: str
-    nationality: str
+
 
 
 class PassportDataCreate(PassportDataBase):
     user_id: int
+    passport_filepath: str
 
 
-class PassportDataResponse(PassportDataCreate):
+class PassportDataResponse(PassportDataBase):
     id: int
+    user_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PassportDataUpdate(BaseModel):
-    passport_series_number: str | None = None
-    issue_date: date | None = None
-    issuing_authority: str | None = None
-    authority_code: str | None = None
-    place_of_birth: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    third_name: str | None = None
     date_of_birth: date | None = None
+    passport_series_number: str | None = None
+    jshshir: str | None = None
+    issue_date: date | None = None
     gender: str | None = None
-    nationality: str | None = None
