@@ -6,7 +6,7 @@ __all__ = (
     "get_current_user",
     "get_user",
     "save_uploaded_file",
-    "save_file_path_to_db"
+    "save_file_path_to_db",
 )
 
 

@@ -34,17 +34,13 @@ class StudyFormCrud(BasicCrud[StudyForm, StudyFormBase]):
 
         if not study_form:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="O'quv shakli topilmadi"
+                status_code=status.HTTP_404_NOT_FOUND, detail="O'quv shakli topilmadi"
             )
 
         return study_form
 
     async def get_study_form_all(
-        self,
-        filter_obj: StudyFormFilter,
-        limit: int = 100,
-        offset: int = 0
+        self, filter_obj: StudyFormFilter, limit: int = 100, offset: int = 0
     ) -> List[StudyFormResponse]:
         filters = []
 
@@ -52,13 +48,12 @@ class StudyFormCrud(BasicCrud[StudyForm, StudyFormBase]):
             filters.append(StudyForm.name.ilike(f"%{filter_obj.name}%"))
 
         return await super().get_all(
-            model=StudyForm,
-            limit=limit,
-            offset=offset,
-            filters=filters or None
+            model=StudyForm, limit=limit, offset=offset, filters=filters or None
         )
 
-    async def update_study_form(self, form_id: int, obj: StudyFormUpdate) -> StudyFormResponse:
+    async def update_study_form(
+        self, form_id: int, obj: StudyFormUpdate
+    ) -> StudyFormResponse:
         await self.get_by_study_form_id(form_id)
         return await super().update(model=StudyForm, item_id=form_id, obj_items=obj)
 

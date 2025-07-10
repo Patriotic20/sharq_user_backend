@@ -45,10 +45,10 @@ async def authenticate_user(db: AsyncSession, username: str, password: str):
 
 
 async def get_user(db: AsyncSession, username: str):
-    stmt = select(User).options(
-        joinedload(User.role)
-    ).where(User.phone_number == username)
-    
+    stmt = (
+        select(User).options(joinedload(User.role)).where(User.phone_number == username)
+    )
+
     result = await db.execute(stmt)
     return result.scalars().first()
 

@@ -11,12 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.sms import RegisterWithVerificationRequest
 from src.service.sms import SMSVerificationService
 from src.service import BasicCrud
-from src.utils import ( 
-    hash_password,
-    authenticate_user,
-    create_access_token
-    )
-from src.schemas.user import  Token , RegisterData
+from src.utils import hash_password, authenticate_user, create_access_token
+from src.schemas.user import Token, RegisterData
 from sharq_models.models import User
 from src.service.role import RoleService
 
@@ -67,23 +63,18 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         )
 
     async def login(
-        self,
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+        self, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
     ) -> Token:
         user = await authenticate_user(
-            db=self.db,
-            username=form_data.username,
-            password=form_data.password
+            db=self.db, username=form_data.username, password=form_data.password
         )
         if not user:
-            raise HTTPException(status_code=400, detail="Incorrect username or password")
+            raise HTTPException(
+                status_code=400, detail="Incorrect username or password"
+            )
 
         access_token = create_access_token(
             data={"sub": user.phone_number, "role_id": user.role_id},
         )
 
         return Token(access_token=access_token, token_type="bearer")
-
-
-
-

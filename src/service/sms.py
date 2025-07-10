@@ -70,7 +70,7 @@ class SMSService:
 
     async def send_verification_code(self, phone_number: str) -> str:
         code = self.generate_verification_code()
-    
+
         message = f"Sharq Universiteti. Qabuldan o'tish uchun tasdiqlash kod: {code}"
         # message = "This is test from Eskiz"
 

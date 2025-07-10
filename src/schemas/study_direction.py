@@ -1,4 +1,6 @@
-from pydantic import BaseModel , ConfigDict
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
+
 
 class StudyDirectionBase(BaseModel):
     name: str
@@ -8,7 +10,6 @@ class StudyDirectionBase(BaseModel):
     study_code: str
 
 
-
 class StudyDirectionResponse(StudyDirectionBase):
     id: int
 
@@ -16,15 +17,16 @@ class StudyDirectionResponse(StudyDirectionBase):
 
 
 class StudyDirectionUpdate(BaseModel):
-    name: str | None = None
-    study_form: str | None = None
-    contract_sum: str | None = None
-    education_years: str | None = None
-    study_code: str | None = None
+    name: Optional[str] = None
+    study_form: Optional[str] = None
+    contract_sum: Optional[str] = None
+    education_years: Optional[str] = None
+    study_code: Optional[str] = None
+
 
 class StudyDirectionFilter(BaseModel):
-    name: str | None = None
-    study_form: str | None = None
-    contract_sum: str | None = None
-    education_years: str | None = None
-    study_code: str | None = None
+    name: Optional[str] = None
+    study_form: Optional[str] = None
+    contract_sum: Optional[str] = None
+    education_years: Optional[str] = None
+    study_code: Optional[str] = None

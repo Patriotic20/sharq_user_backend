@@ -22,28 +22,27 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoBase]):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
 
-    async def create_study_info(self, obj_info: StudyInfoBase, user_id: int) -> StudyInfoResponse:
-        new_info = StudyInfoCreate(
-            user_id=user_id,
-            **obj_info.model_dump()
-        )
+    async def create_study_info(
+        self, obj_info: StudyInfoBase, user_id: int
+    ) -> StudyInfoResponse:
+        new_info = StudyInfoCreate(user_id=user_id, **obj_info.model_dump())
         info_data = await self._create_study_info_if_not_exists(obj=new_info)
         return await self._get_with_join(study_info_id=info_data.id, user_id=user_id)
 
     async def _create_study_info_if_not_exists(self, obj: StudyInfoCreate) -> StudyInfo:
         exist_user = await super().get_by_field(
-            model=StudyInfo,
-            field_name="user_id",
-            field_value=obj.user_id
+            model=StudyInfo, field_name="user_id", field_value=obj.user_id
         )
         if exist_user:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Foydalanuvchiga tegishli ma'lumot allaqachon mavjud"
+                detail="Foydalanuvchiga tegishli ma'lumot allaqachon mavjud",
             )
         return await super().create(model=StudyInfo, obj_items=obj)
 
-    async def _get_with_join(self, study_info_id: int, user_id: int) -> StudyInfoResponse:
+    async def _get_with_join(
+        self, study_info_id: int, user_id: int
+    ) -> StudyInfoResponse:
         stmt = (
             select(StudyInfo)
             .options(
@@ -68,12 +67,18 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoBase]):
         return StudyInfoResponse(
             id=study_info.id,
             user_id=study_info.user_id,
-            study_language=StudyLanguageResponse.model_validate(study_info.study_language),
+            study_language=StudyLanguageResponse.model_validate(
+                study_info.study_language
+            ),
             study_form=StudyFormResponse.model_validate(study_info.study_form),
-            study_direction=StudyDirectionResponse.model_validate(study_info.study_direction),
+            study_direction=StudyDirectionResponse.model_validate(
+                study_info.study_direction
+            ),
         )
 
-    async def get_by_id_study_info(self, study_info_id: int, user_id: int) -> StudyInfoResponse:
+    async def get_by_id_study_info(
+        self, study_info_id: int, user_id: int
+    ) -> StudyInfoResponse:
         return await self._get_with_join(study_info_id=study_info_id, user_id=user_id)
 
     async def get_all_study_info(
@@ -107,7 +112,9 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoBase]):
         study_infos = result.scalars().all()
         return [self._to_response_with_names(info) for info in study_infos]
 
-    async def update_study_info(self, study_info_id: int, obj: StudyInfoBase, user_id: int):
+    async def update_study_info(
+        self, study_info_id: int, obj: StudyInfoBase, user_id: int
+    ):
         await self.get_by_id_study_info(study_info_id=study_info_id, user_id=user_id)
         await super().update(model=StudyInfo, item_id=study_info_id, obj_items=obj)
         return await self._get_with_join(study_info_id=study_info_id, user_id=user_id)

@@ -3,12 +3,11 @@ from src.service import BasicCrud
 from sharq_models.models import StudyDirection
 from src.schemas.study_direction import (
     StudyDirectionBase,
-    StudyDirectionUpdate,  
+    StudyDirectionUpdate,
     StudyDirectionFilter,
     StudyDirectionResponse,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from typing import List
 
 
@@ -16,7 +15,9 @@ class StudyDirectionCrud(BasicCrud[StudyDirection, StudyDirectionBase]):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
 
-    async def create_study_direction(self, obj: StudyDirectionBase) -> StudyDirectionResponse:
+    async def create_study_direction(
+        self, obj: StudyDirectionBase
+    ) -> StudyDirectionResponse:
         existing = await super().get_by_field(
             model=StudyDirection,
             field_name="study_code",
@@ -30,22 +31,22 @@ class StudyDirectionCrud(BasicCrud[StudyDirection, StudyDirectionBase]):
 
         return await super().create(model=StudyDirection, obj_items=obj)
 
-    async def get_by_study_direction_id(self, direction_id: int) -> StudyDirectionResponse:
-        study_direction = await super().get_by_id(model=StudyDirection, item_id=direction_id)
+    async def get_by_study_direction_id(
+        self, direction_id: int
+    ) -> StudyDirectionResponse:
+        study_direction = await super().get_by_id(
+            model=StudyDirection, item_id=direction_id
+        )
 
         if not study_direction:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Yo'nalish topilmadi"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Yo'nalish topilmadi"
             )
 
         return study_direction
 
     async def get_study_direction_all(
-        self,
-        filter_obj: StudyDirectionFilter,
-        limit: int = 100,
-        offset: int = 0
+        self, filter_obj: StudyDirectionFilter, limit: int = 100, offset: int = 0
     ) -> List[StudyDirectionResponse]:
         filters = []
 
@@ -61,17 +62,16 @@ class StudyDirectionCrud(BasicCrud[StudyDirection, StudyDirectionBase]):
             filters.append(StudyDirection.study_code == filter_obj.study_code)
 
         return await super().get_all(
-            model=StudyDirection,
-            limit=limit,
-            offset=offset,
-            filters=filters or None
+            model=StudyDirection, limit=limit, offset=offset, filters=filters or None
         )
 
-
-
-    async def update_study_direction(self, direction_id: int, obj: StudyDirectionUpdate) -> StudyDirectionResponse:
+    async def update_study_direction(
+        self, direction_id: int, obj: StudyDirectionUpdate
+    ) -> StudyDirectionResponse:
         await self.get_by_study_direction_id(direction_id)
-        return await super().update(model=StudyDirection, item_id=direction_id, obj_items=obj)
+        return await super().update(
+            model=StudyDirection, item_id=direction_id, obj_items=obj
+        )
 
     async def delete_study_direction(self, direction_id: int) -> dict:
         await self.get_by_study_direction_id(direction_id)

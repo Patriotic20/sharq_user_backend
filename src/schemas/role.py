@@ -4,8 +4,6 @@ from typing import Optional
 
 class RoleBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    permissions: Optional[str] = None  # JSON string of permissions
 
 
 class RoleCreate(RoleBase):
@@ -14,8 +12,6 @@ class RoleCreate(RoleBase):
 
 class RoleUpdate(BaseModel):
     name: Optional[str] = None
-    description: Optional[str] = None
-    permissions: Optional[str] = None
 
 
 class RoleResponse(RoleBase):

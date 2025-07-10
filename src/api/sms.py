@@ -31,6 +31,7 @@ async def send_verification_code(
     result = await service.create_verification_session(request.phone_number)
     return SendVerificationCodeResponse(**result)
 
+
 @sms_router.post("/register", response_model=RegisterWithVerificationResponse)
 async def register_with_verification(
     request: RegisterWithVerificationRequest,
@@ -38,6 +39,7 @@ async def register_with_verification(
 ):
     result = await auth_service.register_with_verification(request)
     return RegisterWithVerificationResponse(**result)
+
 
 @sms_router.post("/callback")
 async def sms_callback(request: Request):

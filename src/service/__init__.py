@@ -1,13 +1,14 @@
 from typing import Generic, TypeVar, Type, Any
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select , and_
+from sqlalchemy import select, and_
 from src.core.db import Base
 from sqlalchemy.exc import SQLAlchemyError
-from typing import Optional , Sequence
+from typing import Optional, Sequence
 
-ModelType = TypeVar("ModelType", bound=Base) #type: ignore
+ModelType = TypeVar("ModelType", bound=Base)  # type: ignore
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
+
 
 class BasicCrud(Generic[ModelType, SchemaType]):
     def __init__(self, db: AsyncSession):
@@ -34,11 +35,11 @@ class BasicCrud(Generic[ModelType, SchemaType]):
             raise e
 
     async def get_all(
-            self,
-            model: Type[ModelType],
-            limit: int = 100,
-            offset: int = 0,
-            filters: Optional[Sequence] = None,  # New parameter
+        self,
+        model: Type[ModelType],
+        limit: int = 100,
+        offset: int = 0,
+        filters: Optional[Sequence] = None,  # New parameter
     ):
         try:
             stmt = select(model).offset(offset).limit(limit)

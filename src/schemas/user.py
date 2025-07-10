@@ -1,9 +1,12 @@
-from pydantic import BaseModel , field_validator
+from pydantic import BaseModel
+from typing import Optional
+
 
 class RegisterData(BaseModel):
     phone_number: str
-    password:str
-    role_id: int
+    password: str
+    role_id: Optional[int] = None
+
 
 class Token(BaseModel):
     access_token: str
@@ -11,6 +14,5 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    username: str | None = None
+    username: Optional[str] = None
     scopes: list[str] = []
-

@@ -1,5 +1,6 @@
-from pydantic import BaseModel , ConfigDict
+from pydantic import BaseModel, ConfigDict
 from datetime import date
+from typing import Optional
 
 
 class PassportDataBase(BaseModel):
@@ -11,7 +12,6 @@ class PassportDataBase(BaseModel):
     jshshir: str
     issue_date: date
     gender: str
-
 
 
 class PassportDataCreate(PassportDataBase):
@@ -27,11 +27,11 @@ class PassportDataResponse(PassportDataBase):
 
 
 class PassportDataUpdate(BaseModel):
-    first_name: str | None = None
-    last_name: str | None = None
-    third_name: str | None = None
-    date_of_birth: date | None = None
-    passport_series_number: str | None = None
-    jshshir: str | None = None
-    issue_date: date | None = None
-    gender: str | None = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    third_name: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    passport_series_number: Optional[str] = None
+    jshshir: Optional[str] = None
+    issue_date: Optional[date] = None
+    gender: Optional[str] = None
