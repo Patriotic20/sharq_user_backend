@@ -10,3 +10,8 @@ wheels/
 # Virtual environments
 .venv
 uploads/
+
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.DS_Store
