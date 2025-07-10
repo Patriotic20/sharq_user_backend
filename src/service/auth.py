@@ -8,14 +8,16 @@ from fastapi.security import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+from src.service.amo import create_initial_lead
 from src.schemas.sms import RegisterWithVerificationRequest
 from src.service.sms import SMSVerificationService
 from src.service import BasicCrud
 from src.utils import hash_password, authenticate_user, create_access_token
 from src.schemas.user import Token, RegisterData
-from sharq_models.models import User
+from sharq_models.models import User, AMOCrmLead
+from src.schemas.amo import AMOCrmLead as AMOCrmLeadSchema
 from src.service.role import RoleService
-
+from src.core.config import settings
 
 class UserAuthService(BasicCrud[User, RegisterData]):
     def __init__(self, db: AsyncSession):
@@ -23,7 +25,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
 
     async def register_with_verification(
         self, user_data: RegisterWithVerificationRequest
-    ):
+    ):  
         sms_service = SMSVerificationService(self.db)
         await sms_service.verify_code(
             user_data.phone_number, user_data.verification_code
@@ -51,6 +53,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         access_token = create_access_token(
             data={"sub": result.phone_number, "role_id": result.role_id},
         )
+        await self.handle_initial_lead(result.id, user_data.phone_number)
 
         return dict(
             message="User registered successfully",
@@ -61,6 +64,24 @@ class UserAuthService(BasicCrud[User, RegisterData]):
             },
             token=access_token,
         )
+        
+    async def handle_initial_lead(self, user_id: int, phone_number: str):
+        lead = await self.get_by_field(
+            model=AMOCrmLead, field_name="user_id", field_value=user_id
+        )
+        if not lead:
+            initial_lead = create_initial_lead(phone_number, settings.amo_crm_config)
+            await self.create(
+                model=AMOCrmLead,
+                obj_items=AMOCrmLeadSchema(
+                    user_id=user_id,
+                    contact_id=initial_lead.get("contact_id"),
+                    lead_id=initial_lead.get("deal_id"),
+                    phone_number=phone_number,
+                    contact_data={},
+                    lead_data={},
+                ),
+            )
 
     async def login(
         self, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]

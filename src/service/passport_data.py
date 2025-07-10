@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status, UploadFile
+from src.service.amo import update_lead_with_passport_data
 from src.service import BasicCrud
-from sharq_models.models import PassportData, User
+from sharq_models.models import PassportData, User, AMOCrmLead 
 from src.schemas.passport_data import (
     PassportDataBase,
     PassportDataUpdate,
@@ -8,7 +9,7 @@ from src.schemas.passport_data import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.utils.work_with_file import save_uploaded_file
-
+from src.core.config import settings
 
 class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
     def __init__(self, db: AsyncSession):
@@ -23,10 +24,27 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
             passport_filepath=file_path,
             **passport_data_item.model_dump(),
         )
+        
+        lead: AMOCrmLead = await self._get_lead(user_id)
+        if not lead:
+            print("Lead not found")
+            pass
+                
+        update_lead_with_passport_data(
+            contact_id=lead.contact_id,
+            passport_data=passport_data_item,
+            config_data=settings.amo_crm_config,
+        )
 
         return await super().create(
             model=PassportData, obj_items=passport_data_with_user
         )
+        
+    async def _get_lead(self, user_id: int):
+        lead = await super().get_by_field(
+            model=AMOCrmLead, field_name="user_id", field_value=user_id
+        )
+        return lead
 
     async def get_passport_data_by_id(self, passport_data_id: int, user_id: int):
         passport_data_info: PassportData = await super().get_by_id(

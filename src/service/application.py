@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import joinedload
 
+from src.schemas.amo import AMOCrmLead
+from src.service.amo import DealData, update_lead_with_full_data
 from src.service import BasicCrud
 from sharq_models.models import (
     Application,
@@ -75,6 +77,27 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
         )
         result = await self.db.execute(stmt)
         application_with_joins = result.scalar_one()
+        
+        lead: AMOCrmLead = await self._get_lead(user_id)
+        if not lead:
+            print("Lead not found")
+            pass
+                
+        update_lead_with_full_data(
+            deal_id=lead.lead_id,
+            deal_data=DealData(
+                contact_id=lead.contact_id,
+                name=f"{passport_data.first_name} {passport_data.last_name} {passport_data.third_name}",
+                edu_lang_id=str(application_with_joins.study_info.study_language.name),
+                edu_type=str(application_with_joins.study_info.study_form.name),
+                edu_form=str(application_with_joins.study_info.study_form.name),
+                edu_direction=str(application_with_joins.study_info.study_direction.name),
+                edu_end_date=str(application_with_joins.study_info.study_direction.education_years),
+                admission_id=0,
+                certificate_link="",
+                passport_file_link="",
+            ),
+        )
 
         return ApplicationResponse.model_validate(application_with_joins)
 
