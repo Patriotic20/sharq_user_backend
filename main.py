@@ -11,6 +11,10 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(api_router)
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
