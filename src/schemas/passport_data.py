@@ -1,20 +1,38 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict , Field
 from datetime import date
 from typing import Optional
 
 
+
+
+    
+    
+    
+class PersonalInfo(BaseModel):
+    photo: str
+    jshshir: str = Field(alias="pinfl")
+    passport_series_number: str = Field(alias="serialAndNumber")
+    gender: str
+    citizenship: str
+    nationality: str
+    date_of_birth: date = Field(alias="birthDate")
+    first_name: str = Field(alias="firstName")
+    last_name: str = Field(alias="lastName")
+    third_name: str = Field(alias="fatherName")
+    issue_date: date = Field(alias="givenDate")
+    passport_expire_date: date = Field(alias="passportExpireDate")
+    country: str
+    region: str
+    district: str
+    address: str
+    
+
 class PassportDataBase(BaseModel):
-    first_name: str
-    last_name: str
-    third_name: str
-    date_of_birth: date
     passport_series_number: str
     jshshir: str
-    issue_date: date
-    gender: str
 
 
-class PassportDataCreate(PassportDataBase):
+class PassportDataCreate(PersonalInfo):
     user_id: int
     passport_filepath: str
 

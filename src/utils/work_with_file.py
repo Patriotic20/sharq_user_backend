@@ -5,7 +5,9 @@ from fastapi import UploadFile, HTTPException, status
 from uuid import uuid4
 from src.service import ModelType
 from typing import Type
-
+from pathlib import Path
+import uuid
+import base64
 
 async def save_uploaded_file(file: UploadFile, upload_dir: str | None = "uploads"):
     os.makedirs(upload_dir, exist_ok=True)
@@ -43,3 +45,15 @@ async def save_file_path_to_db(
     await db.commit()
 
     return {"status": "success", "file_path": file_path}
+
+
+def save_base64_image(base64_string: str, upload_dir: str = "uploads/") -> str:
+    Path(upload_dir).mkdir(parents=True, exist_ok=True)
+
+    filename = f"{uuid.uuid4()}.jpg"
+    file_path = Path(upload_dir) / filename
+
+    with open(file_path, "wb") as image_file:
+        image_file.write(base64.b64decode(base64_string))
+
+    return str(file_path)

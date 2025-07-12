@@ -22,27 +22,15 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 
 @passport_data_router.post("/create")
 async def create_passport_data(
-    first_name: Annotated[str, Form()],
-    last_name: Annotated[str, Form()],
-    third_name: Annotated[str, Form()],
-    date_of_birth: Annotated[date, Form()],
     passport_series_number: Annotated[str, Form()],
     jshshir: Annotated[str, Form()],
-    issue_date: Annotated[date, Form()],
-    gender: Annotated[str, Form()],
     file: Annotated[UploadFile, File(...)],
     service: Annotated[PassportDataCrud, Depends(get_service_crud)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
 ) -> PassportDataResponse:
     passport_data_item = PassportDataBase(
-        first_name=first_name,
-        last_name=last_name,
-        third_name=third_name,
-        date_of_birth=date_of_birth,
-        passport_series_number=passport_series_number,
         jshshir=jshshir,
-        issue_date=issue_date,
-        gender=gender,
+        passport_series_number=passport_series_number
     )
     return await service.create_passport_data(
         passport_data_item=passport_data_item, file=file, user_id=current_user.id
