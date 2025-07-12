@@ -11,6 +11,7 @@ from src.schemas.passport_data import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.config import settings
 from src.clients.passport_data import PassportDataClient
+from src.utils.work_with_file import save_base64_image
 
 
 class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
@@ -30,6 +31,11 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         )
 
         data = passport_data_response.json().get("data")
+        base_64_image = data.get("photo")
+        if base_64_image:
+            image_path = save_base64_image(base_64_image)
+            data["image_path"] = image_path
+        
         if not data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Passport data not found"
@@ -43,16 +49,17 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         if not lead:
             print("Lead not found")
             pass
-
-        update_lead_with_passport_data(
-            contact_id=lead.contact_id,
-            passport_data=passport_data_with_user,
-            config_data=settings.amo_crm_config,
-        )
+        else:
+            update_lead_with_passport_data(
+                contact_id=lead.contact_id,
+                passport_data=passport_data_with_user,
+                config_data=settings.amo_crm_config,
+            )
 
         return await super().create(
             model=PassportData, obj_items=passport_data_with_user
         )
+        
 
     async def _get_lead(self, user_id: int):
         lead = await super().get_by_field(

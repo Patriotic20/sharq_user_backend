@@ -28,6 +28,7 @@ class PersonalInfo(BaseModel):
     region: str = Field(alias="region")
     district: str = Field(alias="district")
     address: str = Field(alias="address")
+    image_path: str
 
 
 class PassportDataCreate(PersonalInfo):
@@ -52,5 +53,6 @@ class PassportDataResponse(BaseModel):
     region: str
     district: str
     address: str
+    image_path: str
 
     model_config = ConfigDict(from_attributes=True)
