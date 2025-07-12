@@ -19,13 +19,14 @@ from src.schemas.amo import AMOCrmLead as AMOCrmLeadSchema
 from src.service.role import RoleService
 from src.core.config import settings
 
+
 class UserAuthService(BasicCrud[User, RegisterData]):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
 
     async def register_with_verification(
         self, user_data: RegisterWithVerificationRequest
-    ):  
+    ):
         sms_service = SMSVerificationService(self.db)
         await sms_service.verify_code(
             user_data.phone_number, user_data.verification_code
@@ -64,7 +65,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
             },
             token=access_token,
         )
-        
+
     async def handle_initial_lead(self, user_id: int, phone_number: str):
         lead = await self.get_by_field(
             model=AMOCrmLead, field_name="user_id", field_value=user_id

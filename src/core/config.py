@@ -16,23 +16,20 @@ class Settings(BaseSettings):
     sms_sender: str
     sms_api_key: str
     sms_callback_url: str = "https://sharquniversity.amocrm.ru/api/v4/leads/callback"
-    
+
     amo_crm_base_url: str = "https://sharquniversity.amocrm.ru/api/v4"
     amo_crm_token: str
 
-    passport_data_login_url: str
-    passport_data_info_url: str
-    
-    passport_login_username: str
-    passport_login_passport: str
-    
+    passport_data_base_url: str
+    passport_data_username: str
+    passport_data_password: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
     @property
     def connection_string(self):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
-    
+
     @property
     def amo_crm_config(self):
         return {

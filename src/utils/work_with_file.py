@@ -9,6 +9,7 @@ from pathlib import Path
 import uuid
 import base64
 
+
 async def save_uploaded_file(file: UploadFile, upload_dir: str | None = "uploads"):
     os.makedirs(upload_dir, exist_ok=True)
     file_ext = os.path.splitext(file.filename)[1]

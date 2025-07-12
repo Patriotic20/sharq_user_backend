@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class AMOCrmLead(BaseModel):
     user_id: int
     contact_id: int
