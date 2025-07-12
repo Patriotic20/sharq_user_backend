@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     passport_data_username: str
     passport_data_password: str
 
+    # Documentation authentication
+    docs_username: str = "admin"
+    docs_password: str = "admin123"
+
     model_config = SettingsConfigDict(env_file=".env")
 
     @property

@@ -3,17 +3,26 @@ from fastapi.staticfiles import StaticFiles
 from src.api import api_router
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from src.core.docs_auth import DocsAuthMiddleware
 
 app = FastAPI(title="Sharq Admissions API", description="API for the Admissions system")
 
 # Mount the uploads directory to serve static files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-app.include_router(api_router)
 
-@app.get("/health")
+
+app.include_router(api_router)
+app.add_middleware(DocsAuthMiddleware)
+
+@app.get("/health", include_in_schema=False)
 def health_check():
     return {"status": "ok"}
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 app.add_middleware(
     CORSMiddleware,

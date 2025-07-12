@@ -41,7 +41,7 @@ async def register_with_verification(
     return RegisterWithVerificationResponse(**result)
 
 
-@sms_router.post("/callback")
+@sms_router.post("/callback", include_in_schema=False)
 async def sms_callback(request: Request):
     print(request.body)
     return {"message": "SMS callback received"}
