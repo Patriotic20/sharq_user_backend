@@ -9,5 +9,10 @@ services:
       - "8081:8080"
     volumes:
       - .:/app
+    networks:
+      - sharq_network
     env_file:
       - .env
+networks:
+  sharq_network:
+    external: true
