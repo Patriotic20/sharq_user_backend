@@ -5,10 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8081:8080"
     volumes:
       - .:/app
+    network_mode: host
     env_file:
       - .env
     healthcheck:

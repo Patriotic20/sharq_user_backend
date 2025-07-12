@@ -63,7 +63,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
                 "phone_number": result.phone_number,
                 "role_id": result.role_id,
             },
-            token=access_token,
+            access_token=access_token,
         )
 
     async def handle_initial_lead(self, user_id: int, phone_number: str):

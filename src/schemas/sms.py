@@ -33,4 +33,4 @@ class RegisterWithVerificationRequest(BaseModel):
 class RegisterWithVerificationResponse(BaseModel):
     message: str
     data: dict
-    token: str
+    access_token: str
