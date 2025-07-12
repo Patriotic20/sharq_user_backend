@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     sms_sender: str
     sms_api_key: str
     sms_callback_url: str = "https://sharquniversity.amocrm.ru/api/v4/leads/callback"
+    
+    amo_crm_base_url: str = "https://sharquniversity.amocrm.ru/api/v4"
+    amo_crm_token: str
 
     passport_data_login_url: str
     passport_data_info_url: str
