@@ -27,4 +27,4 @@ async def get_application_by_user_id(
     service: Annotated[ApplicationCrud, Depends(get_service_crud)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
 ):
-    return await service.get_application_with_nested_info(user_id=current_user.id)
+    return await service.get_application_by_user_id(user_id=current_user.id)

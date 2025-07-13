@@ -34,9 +34,10 @@ class StudyInfoResponse(BaseModel):
     study_direction: StudyDirectionResponse
     education_type: EducationTypeResponse
     study_type: StudyTypeResponse
-    graduate_year: str
-    certificate_path: str 
-    dtm_sheet: str 
+    
+    graduate_year: str | None = None
+    certificate_path: str  | None = None
+    dtm_sheet: str  | None = None
     
     
     model_config = ConfigDict(from_attributes=True)

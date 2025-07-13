@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import joinedload
 
-from src.schemas.amo import AMOCrmLead
+from src.schemas.amo import AMOCrmLead 
 from src.service.amo import DealData, update_lead_with_full_data
 from src.service import BasicCrud
 from sharq_models.models import (
@@ -66,74 +66,84 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
         stmt = (
             select(Application)
             .options(
-                joinedload(Application.study_info).joinedload(StudyInfo.study_language),
-                joinedload(Application.study_info).joinedload(StudyInfo.study_form),
-                joinedload(Application.study_info).joinedload(
-                    StudyInfo.study_direction
-                ),
-                joinedload(Application.passport_data),
+                *[
+                    joinedload(Application.passport_data),
+                    joinedload(Application.study_info).joinedload(StudyInfo.study_language),
+                    joinedload(Application.study_info).joinedload(StudyInfo.study_form),
+                    joinedload(Application.study_info).joinedload(StudyInfo.study_type),
+                    joinedload(Application.study_info).joinedload(StudyInfo.education_type),
+                    joinedload(Application.study_info).joinedload(
+                        StudyInfo.study_direction
+                    ).joinedload(StudyDirection.study_type),
+                    joinedload(Application.study_info).joinedload(
+                        StudyInfo.study_direction
+                    ).joinedload(StudyDirection.education_type),
+                ]
             )
             .where(Application.id == application.id)
         )
         result = await self.db.execute(stmt)
         application_with_joins = result.scalar_one()
 
-        lead: AMOCrmLead = await self._get_lead(user_id)
-        if not lead:
-            print("Lead not found")
-            pass
+        # lead: AMOCrmLead = await self._get_lead(user_id)
+        # if not lead:
+        #     print("Lead not found")
+        #     pass
 
-        update_lead_with_full_data(
-            deal_id=lead.lead_id,
-            deal_data=DealData(
-                contact_id=lead.contact_id,
-                name=f"{passport_data.first_name} {passport_data.last_name} {passport_data.third_name}",
-                edu_lang_id=str(application_with_joins.study_info.study_language.name),
-                edu_type=str(application_with_joins.study_info.study_form.name),
-                edu_form=str(application_with_joins.study_info.study_form.name),
-                edu_direction=str(
-                    application_with_joins.study_info.study_direction.name
-                ),
-                edu_end_date=str(
-                    application_with_joins.study_info.study_direction.education_years
-                ),
-                admission_id=0,
-                certificate_link="",
-                passport_file_link="",
-            ),
-        )
+        # update_lead_with_full_data(
+        #     deal_id=lead.lead_id,
+        #     deal_data=DealData(
+        #         contact_id=lead.contact_id,
+        #         name=f"{passport_data.first_name} {passport_data.last_name} {passport_data.third_name}",
+        #         edu_lang_id=str(application_with_joins.study_info.study_language.name),
+        #         edu_type=str(application_with_joins.study_info.study_form.name),
+        #         edu_form=str(application_with_joins.study_info.study_form.name),
+        #         edu_direction=str(
+        #             application_with_joins.study_info.study_direction.name
+        #         ),
+        #         edu_end_date=str(
+        #             application_with_joins.study_info.study_direction.education_years
+        #         ),
+        #         admission_id=0,
+        #         certificate_link="",
+        #         passport_file_link="",
+        #     ),
+        # )
 
         return ApplicationResponse.model_validate(application_with_joins)
 
-    async def get_application_with_nested_info(
-        self, application_id: int, user_id: int | None = None
-    ):
+    async def get_application_by_user_id(self, user_id: int):
         stmt = (
             select(Application)
             .options(
                 joinedload(Application.passport_data),
-                joinedload(Application.study_info).joinedload(StudyInfo.study_form),
-                joinedload(Application.study_info).joinedload(StudyInfo.study_language),
-                joinedload(Application.study_info).joinedload(
-                    StudyInfo.study_direction
-                ),
+                joinedload(Application.study_info)
+                    .joinedload(StudyInfo.study_form),
+                joinedload(Application.study_info)
+                    .joinedload(StudyInfo.study_language),
+                joinedload(Application.study_info)
+                    .joinedload(StudyInfo.study_direction)
+                    .joinedload(StudyDirection.study_type),
+                joinedload(Application.study_info)
+                    .joinedload(StudyInfo.study_direction)
+                    .joinedload(StudyDirection.education_type),
+                joinedload(Application.study_info)
+                    .joinedload(StudyInfo.study_type),
+                joinedload(Application.study_info)
+                    .joinedload(StudyInfo.education_type),
             )
-            .where(Application.id == application_id)
+            .join(Application.passport_data)
+            .where(PassportData.user_id == user_id)
         )
 
-        # Ownership filter
-        if user_id is not None:
-            stmt = stmt.where(
-                Application.passport_data.has(PassportData.user_id == user_id),
-                Application.study_info.has(StudyInfo.user_id == user_id),
-            )
 
         result = await self.db.execute(stmt)
         application = result.scalars().first()
 
         if not application:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Application not found"
             )
 
         return ApplicationResponse.model_validate(application)
