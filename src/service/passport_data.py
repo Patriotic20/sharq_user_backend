@@ -1,12 +1,11 @@
-from fastapi import HTTPException, status, UploadFile
+from fastapi import HTTPException, status
 from src.service.amo import update_lead_with_passport_data
 from src.service import BasicCrud
-from sharq_models.models import PassportData, User, AMOCrmLead
+from sharq_models.models import PassportData, AMOCrmLead
 from src.schemas.passport_data import (
     PassportDataBase,
     PassportDataCreate,
     PersonalInfo,
-    PassportDataResponse,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.config import settings

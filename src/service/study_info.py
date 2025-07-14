@@ -1,15 +1,19 @@
-from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-from typing import Any, Type
-from sharq_models.models import StudyInfo, StudyDirection, StudyForm, StudyLanguage, StudyType, EducationType
+from sharq_models.models import StudyInfo, AMOCrmLead
 
-from sharq_models.database import Base
+from src.core.config import settings
+from src.service.amo import update_lead_with_full_data, DealData
 from src.schemas.study_info import (
     StudyInfoCreate,
     StudyInfoResponse,
 )
+from fastapi import HTTPException, status
+from typing import Any, Type
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from sharq_models.database import Base
+from sharq_models.models import StudyLanguage, StudyForm, StudyDirection, StudyType, EducationType
+
 from src.schemas.study_language import StudyLanguageResponse
 from src.schemas.study_form import StudyFormResponse
 from src.schemas.study_direction import StudyDirectionResponse
@@ -18,13 +22,48 @@ from src.schemas.education_type import EducationTypeResponse
 
 from src.service import BasicCrud
 
+DEAL_DATA_MAPPING = {
+    "name": "name",
+    "contact_id": "contact_id",
+    "StudyLanguage": "edu_lang_id",
+    "EducationType": "edu_type",
+    "StudyForm": "edu_form",
+    "StudyDirection": "edu_direction",
+    "edu_end_date": "edu_end_date",
+    "admission_id": "admission_id",
+    "certificate_link": "certificate_link",
+    "passport_file_link": "passport_file_link",
+}
+
 
 class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
+        self.lead_data = {}
+        
+    async def _get_lead(self, user_id: int):
+        lead = await super().get_by_field(
+            model=AMOCrmLead, field_name="user_id", field_value=user_id
+        )
+        return lead
 
     async def create_study_info(self, study_info: StudyInfoCreate):
         await self._create_study_info_if_not_exists(study_info=study_info)
+        lead = await self._get_lead(study_info.user_id)
+        if not lead:
+            print("Lead not found")
+            pass
+        else:
+            update_lead_with_full_data(
+                deal_id=lead.lead_id,
+                deal_data=DealData(**{
+                    "name": "Unnamed",
+                    "contact_id": lead.contact_id,
+                    **self.lead_data,
+                }),
+                config_data=settings.amo_crm_config,
+            )
+        
         return {"message": "Ma'lumot muvaffaqiyatli qo'shildi"}
 
     async def _create_study_info_if_not_exists(self, study_info: StudyInfoCreate):
@@ -38,6 +77,12 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
             )
             
         await self._validate_data(study_info=study_info)
+        
+        self.lead_data["admission_id"] = study_info.study_direction_id
+        self.lead_data["edu_end_date"] = study_info.graduate_year
+        self.lead_data["certificate_link"] = study_info.certificate_path
+        self.lead_data["passport_file_link"] = study_info.dtm_sheet
+        
         await super().create(model=StudyInfo, obj_items=study_info)
         
     async def _validate_data(self, study_info: StudyInfoCreate):
@@ -54,6 +99,8 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         
     async def _check_exist(self, model: Type[Base], field_name: str, field_value: Any):
         existing_data = await super().get_by_field(model=model, field_name=field_name, field_value=field_value)
+        if model.__name__ in DEAL_DATA_MAPPING:
+            self.lead_data[DEAL_DATA_MAPPING[model.__name__]] = existing_data.name if existing_data else None
         return existing_data is not None
         
     async def _get_with_join(self, user_id: int) -> StudyInfoResponse:

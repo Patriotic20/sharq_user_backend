@@ -640,11 +640,11 @@ def update_lead_with_passport_data(
 
 
 def update_lead_with_full_data(
-    contact_id: int, deal_id: int, deal_data: DealData, config_data: Dict[str, Any]
+    deal_id: int, deal_data: DealData, config_data: Dict[str, Any]
 ) -> bool:
     try:
         amo_service = create_amocrm_service(config_data)
-        return amo_service.update_contact_with_full_data(contact_id, deal_id, deal_data)
+        return amo_service.update_contact_with_full_data(deal_id, deal_data)
     except Exception as e:
         logger.error(f"Failed to update lead with full data: {e}")
         return False
