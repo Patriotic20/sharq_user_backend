@@ -36,7 +36,7 @@ async def create_passport_data(
     )
 
 
-@passport_data_router.get("/")
+@passport_data_router.get("")
 async def get_by_passport_data_id(
     service: Annotated[PassportDataCrud, Depends(get_service_crud)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
