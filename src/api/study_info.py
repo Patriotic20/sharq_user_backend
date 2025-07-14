@@ -38,3 +38,43 @@ async def get_user_study_info(
     current_user: Annotated[User, Depends(require_roles(["user"]))],
 ) -> StudyInfoResponse:
     return await service.get_study_info_by_user_id(user_id=current_user.id)
+
+
+@study_info_router.get("/study_direction")
+async def get_study_direction_list(
+    service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.get_study_direction_list()
+
+
+@study_info_router.get("/study_type")
+async def get_study_type_list(
+    service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.get_study_type_list()
+
+
+@study_info_router.get("/study_form")
+async def get_study_form_list(
+    service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.get_study_form_list()
+
+
+@study_info_router.get("/study_language")
+async def get_study_language_list(
+    service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.get_study_language_list()
+
+
+@study_info_router.get("/education_type")
+async def get_education_type_list(
+    service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.get_education_type_list()

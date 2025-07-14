@@ -9,7 +9,7 @@ from src.schemas.study_info import (
 )
 from fastapi import HTTPException, status
 from typing import Any, Type
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 from sharq_models.database import Base
 from sharq_models.models import StudyLanguage, StudyForm, StudyDirection, StudyType, EducationType
@@ -150,5 +150,31 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
             dtm_sheet=study_info.dtm_sheet,
         )
 
-    async def get_study_info_by_user_id(self, user_id: int) -> StudyInfoResponse:
-        return await self._get_with_join(user_id=user_id)
+    async def _get_all(self, model: Type[Base], filters: dict[str, Any] = {}) -> list[Base]:
+        stmt = select(model)
+        if filters:
+            stmt = stmt.where(and_(*[getattr(model, key) == value for key, value in filters.items()]))
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+    
+    async def get_study_info_by_user_id(self) -> StudyInfoResponse:
+        return await self._get_all()
+    
+    
+    async def get_study_direction_list(self) -> StudyDirectionResponse:
+        return await self._get_all(StudyDirection)
+    
+    async def get_study_type_list(self) -> StudyTypeResponse:
+        return await self._get_all(StudyType)
+    
+    async def get_study_form_list(self) -> StudyFormResponse:
+        return await self._get_all(StudyForm)
+    
+    async def get_study_language_list(self) -> StudyLanguageResponse:
+        return await self._get_all(StudyLanguage)
+    
+    async def get_education_type_list(self) -> EducationTypeResponse:
+        return await self._get_all(EducationType)
+    
+    
+    
