@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, BackgroundTasks
 from src.service.amo import update_lead_with_passport_data
 from src.service import BasicCrud
 from sharq_models.models import PassportData, AMOCrmLead
@@ -21,6 +21,7 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         self,
         passport_data_item: PassportDataBase,
         user_id: int,
+        background_tasks: BackgroundTasks,
     ):
         passport_data_client = PassportDataClient()
 
@@ -30,15 +31,17 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         )
 
         data = passport_data_response.json().get("data")
-        base_64_image = data.get("photo")
-        if base_64_image:
-            image_path = save_base64_image(base_64_image)
-            data["image_path"] = image_path
-        
         if not data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Passport data not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Passport Ma'lumotlari topilmadi!"
             )
+        
+        base_64_image = data.get("photo")
+        if base_64_image:
+            # Add image saving to background tasks
+            background_tasks.add_task(self._save_image_background, base_64_image, user_id)
+        else:
+            data["image_path"] = ""
 
         passport_data_with_user = PassportDataCreate(
             user_id=user_id, **PersonalInfo(**data).model_dump(by_alias=True)
@@ -50,15 +53,41 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
             pass
         else:
             update_lead_with_passport_data(
+                deal_id=lead.lead_id,
                 contact_id=lead.contact_id,
                 passport_data=passport_data_with_user,
                 config_data=settings.amo_crm_config,
             )
+            lead.contact_data = {
+                "jshshir": passport_data_with_user.jshshir,
+                "first_name": passport_data_with_user.first_name,
+                "last_name": passport_data_with_user.last_name,
+                "middle_name": passport_data_with_user.third_name,
+                "date_of_birth": passport_data_with_user.date_of_birth,
+                "gender": passport_data_with_user.gender,
+                "nationality": passport_data_with_user.nationality,
+                "passport_series_number": passport_data_with_user.passport_series_number
+            }
+            await self.db.commit()
 
         return await super().create(
             model=PassportData, obj_items=passport_data_with_user
         )
         
+    async def _save_image_background(self, base_64_image: str, user_id: int):
+        try:
+            image_path = await save_base64_image(base_64_image)
+            # Update the passport data record with the image path
+            passport_data = await self.get_by_field(
+                model=PassportData, 
+                field_name="user_id", 
+                field_value=user_id
+            )
+            if passport_data:
+                passport_data.image_path = image_path
+                await self.db.commit()
+        except Exception as e:
+            print(f"Error saving image in background: {e}")
 
     async def _get_lead(self, user_id: int):
         lead = await super().get_by_field(

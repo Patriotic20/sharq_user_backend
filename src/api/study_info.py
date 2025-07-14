@@ -33,7 +33,7 @@ async def create_application(
     )
 
 
-@application_router.get("/", tags=["Application"])
+@application_router.get("", tags=["Application"])
 async def get_user_study_info(
     service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],

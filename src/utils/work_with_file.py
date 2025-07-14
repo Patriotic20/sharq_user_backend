@@ -48,7 +48,7 @@ async def save_file_path_to_db(
     return {"status": "success", "file_path": file_path}
 
 
-def save_base64_image(base64_string: str, upload_dir: str = "uploads/") -> str:
+async def save_base64_image(base64_string: str, upload_dir: str = "uploads/") -> str:
     Path(upload_dir).mkdir(parents=True, exist_ok=True)
 
     filename = f"{uuid.uuid4()}.jpg"

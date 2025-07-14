@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks
 from datetime import date
 from src.service.passport_data import PassportDataCrud
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,6 +23,7 @@ def get_service_crud(db: AsyncSession = Depends(get_db)):
 @passport_data_router.post("/create")
 async def create_passport_data(
     passport_data_item: PassportDataCreateRequest,
+    background_tasks: BackgroundTasks,
     service: Annotated[PassportDataCrud, Depends(get_service_crud)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
 ) -> PassportDataResponse:
@@ -33,6 +34,7 @@ async def create_passport_data(
     return await service.create_passport_data(
         passport_data_item=passport_data_item,
         user_id=current_user.id,
+        background_tasks=background_tasks,
     )
 
 

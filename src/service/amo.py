@@ -526,7 +526,7 @@ class AmoCRMService:
             if not contact_id:
                 return None
 
-            deal_name = f"Initial Lead - {phone}"
+            deal_name = f"Yangi Lead - {phone}"
             deal_data = DealData(
                 name=deal_name,
                 contact_id=contact_id,
@@ -541,7 +541,7 @@ class AmoCRMService:
             )
 
             created_deal = self._create_deal_with_pipeline(
-                deal_data, PIPELINE_TYPES["FIRST_CREATE"], ["Qabul sayt - Initial"]
+                deal_data, PIPELINE_TYPES["FIRST_CREATE"], ["Qabul sayt - Yangi Lead"]
             )
 
             if created_deal:
@@ -559,11 +559,11 @@ class AmoCRMService:
             return None
 
     def update_lead_with_passport_data(
-        self, contact_id: int, contact_data: ContactData
+        self, deal_id: int, contact_id: int, contact_data: ContactData
     ) -> bool:
         try:
             custom_fields_values = self._build_contact_fields_values(contact_data)
-            contact_name = f"{contact_data.last_name} {contact_data.first_name}"
+            contact_name = f"{contact_data.last_name.upper()} {contact_data.first_name.upper()}"
 
             self._make_request(
                 "PATCH",
@@ -571,6 +571,17 @@ class AmoCRMService:
                 json_data={
                     "name": contact_name,
                     "custom_fields_values": custom_fields_values,
+                },
+            )
+            
+            self._make_request(
+                "PATCH",
+                f"leads/{deal_id}",
+                json_data={
+                    "_embedded": {
+                        "contacts": [{"id": contact_id}],
+                        "tags": [{"name": "Qabul sayt - Passport Ma'lumotlari"}],
+                    },
                 },
             )
 
@@ -623,7 +634,7 @@ def create_initial_lead(
 
 
 def update_lead_with_passport_data(
-    contact_id: int, passport_data: PassportData, config_data: Dict[str, Any]
+    deal_id: int, contact_id: int, passport_data: PassportData, config_data: Dict[str, Any]
 ) -> bool:
     contact_data = ContactData(
         first_name=passport_data.first_name,
@@ -633,7 +644,7 @@ def update_lead_with_passport_data(
     )
     try:
         amo_service = create_amocrm_service(config_data)
-        return amo_service.update_lead_with_passport_data(contact_id, contact_data)
+        return amo_service.update_lead_with_passport_data(deal_id, contact_id, contact_data)
     except Exception as e:
         logger.error(f"Failed to update lead with passport data: {e}")
         return False
