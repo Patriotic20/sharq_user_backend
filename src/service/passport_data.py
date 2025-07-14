@@ -21,7 +21,6 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         self,
         passport_data_item: PassportDataBase,
         user_id: int,
-        background_tasks: BackgroundTasks,
     ):
         passport_data_client = PassportDataClient()
 
@@ -38,8 +37,8 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         
         base_64_image = data.get("photo")
         if base_64_image:
-            # Add image saving to background tasks
-            background_tasks.add_task(self._save_image_background, base_64_image, user_id)
+            image_path = await save_base64_image(base_64_image)
+            data["image_path"] = image_path
         else:
             data["image_path"] = ""
 
@@ -63,7 +62,7 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
                 "first_name": passport_data_with_user.first_name,
                 "last_name": passport_data_with_user.last_name,
                 "middle_name": passport_data_with_user.third_name,
-                "date_of_birth": passport_data_with_user.date_of_birth,
+                "date_of_birth": str(passport_data_with_user.date_of_birth),
                 "gender": passport_data_with_user.gender,
                 "nationality": passport_data_with_user.nationality,
                 "passport_series_number": passport_data_with_user.passport_series_number
@@ -76,16 +75,7 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         
     async def _save_image_background(self, base_64_image: str, user_id: int):
         try:
-            image_path = await save_base64_image(base_64_image)
-            # Update the passport data record with the image path
-            passport_data = await self.get_by_field(
-                model=PassportData, 
-                field_name="user_id", 
-                field_value=user_id
-            )
-            if passport_data:
-                passport_data.image_path = image_path
-                await self.db.commit()
+            return await save_base64_image(base_64_image)
         except Exception as e:
             print(f"Error saving image in background: {e}")
 
