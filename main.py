@@ -28,7 +28,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://qabul2.sharqedu.uz"
+        "https://qabul2.sharqedu.uz",
+        "https://admin.sharqedu.uz"
     ],
     allow_credentials=True,
     allow_methods=["*"],
