@@ -4,6 +4,7 @@ from sharq_models.models import StudyInfo, AMOCrmLead
 from src.core.config import settings
 from src.service.amo import update_lead_with_full_data, DealData
 from src.schemas.study_info import (
+    StudyInfoBase,
     StudyInfoCreate,
     StudyInfoResponse,
 )
@@ -47,8 +48,8 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         )
         return lead
 
-    async def create_study_info(self, study_info: StudyInfoCreate):
-        await self._create_study_info_if_not_exists(study_info=study_info)
+    async def create_application(self, study_info: StudyInfoCreate):
+        application = await self._create_study_info_if_not_exists(study_info=study_info)
         lead = await self._get_lead(study_info.user_id)
         if not lead:
             print("Lead not found")
@@ -64,7 +65,22 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
                 config_data=settings.amo_crm_config,
             )
         
-        return {"message": "Ma'lumot muvaffaqiyatli qo'shildi"}
+        return {
+            "message": "Ariza muvaffaqiyatli yaratildi!",
+            "application": application
+        }
+        
+    async def update_application(self, application: StudyInfoBase, user_id: int):
+        application = await super().update_by_field(
+            model=StudyInfo, 
+            obj_items=application,
+            field_name="user_id",
+            field_value=user_id,
+        )
+        return {
+            "message": "Ariza muvaffaqiyatli yangilandi!",
+            "application": application
+        }
 
     async def _create_study_info_if_not_exists(self, study_info: StudyInfoCreate):
         existing_study_info = await super().get_by_field(
@@ -84,6 +100,9 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         self.lead_data["passport_file_link"] = study_info.dtm_sheet
         
         await super().create(model=StudyInfo, obj_items=study_info)
+        
+        application_data = await self._get_with_join(study_info.user_id)
+        return application_data
         
     async def _validate_data(self, study_info: StudyInfoCreate):
         if not await self._check_exist(StudyLanguage, "id", study_info.study_language_id):
@@ -157,8 +176,8 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         result = await self.db.execute(stmt)
         return result.scalars().all()
     
-    async def get_study_info_by_user_id(self) -> StudyInfoResponse:
-        return await self._get_all()
+    async def get_application_by_user_id(self, user_id: int) -> StudyInfoResponse:
+        return await self._get_with_join(user_id=user_id)
     
     
     async def get_study_direction_list(self) -> StudyDirectionResponse:

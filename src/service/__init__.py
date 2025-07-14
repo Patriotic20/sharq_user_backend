@@ -83,6 +83,19 @@ class BasicCrud(Generic[ModelType, SchemaType]):
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise e
+        
+    async def update_by_field(self, model: Type[ModelType], field_name: str, field_value: Any, obj_items: SchemaType):
+        try:
+            db_obj = await self.get_by_field(model, field_name, field_value)
+            if not db_obj:
+                return None
+            for key, value in obj_items.model_dump(exclude_unset=True).items():
+                setattr(db_obj, key, value)
+            await self.db.commit()
+            return db_obj
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise e
 
     async def delete(self, model: Type[ModelType], item_id: int):
         try:
