@@ -23,7 +23,10 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
 
-    async def create_study_info(self, study_info: StudyInfoCreate):
+    async def create_study_info(
+        self, 
+        study_info: StudyInfoCreate,        
+        ):
         await self._create_study_info_if_not_exists(study_info=study_info)
         return {"message": "Ma'lumot muvaffaqiyatli qo'shildi"}
 
