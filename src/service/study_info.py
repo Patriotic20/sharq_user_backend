@@ -1,13 +1,13 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
+from typing import Any, Type
+from sharq_models.models import StudyInfo, StudyDirection, StudyForm, StudyLanguage, StudyType, EducationType
 
-from sharq_models.models import StudyInfo, StudyDirection
-
+from sharq_models.database import Base
 from src.schemas.study_info import (
     StudyInfoCreate,
-    StudyInfoCreateRequest,
     StudyInfoResponse,
 )
 from src.schemas.study_language import StudyLanguageResponse
@@ -36,18 +36,35 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Foydalanuvchiga tegishli ma'lumot allaqachon mavjud",
             )
+            
+        await self._validate_data(study_info=study_info)
         await super().create(model=StudyInfo, obj_items=study_info)
-
+        
+    async def _validate_data(self, study_info: StudyInfoCreate):
+        if not await self._check_exist(StudyLanguage, "id", study_info.study_language_id):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study language not found")
+        if not await self._check_exist(StudyForm, "id", study_info.study_form_id):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study form not found")
+        if not await self._check_exist(StudyDirection, "id", study_info.study_direction_id):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study direction not found")
+        if not await self._check_exist(StudyType, "id", study_info.study_type_id):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study type not found")
+        if not await self._check_exist(EducationType, "id", study_info.education_type_id):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Education type not found")
+        
+    async def _check_exist(self, model: Type[Base], field_name: str, field_value: Any):
+        existing_data = await super().get_by_field(model=model, field_name=field_name, field_value=field_value)
+        return existing_data is not None
+        
     async def _get_with_join(self, user_id: int) -> StudyInfoResponse:
         stmt = (
             select(StudyInfo)
             .options(
-                joinedload(StudyInfo.study_language),
-                joinedload(StudyInfo.study_form),
-                joinedload(StudyInfo.study_direction).joinedload(StudyDirection.study_form),
-                joinedload(StudyInfo.study_direction).joinedload(StudyDirection.study_language),
-                joinedload(StudyInfo.study_direction).joinedload(StudyDirection.study_type),
-                joinedload(StudyInfo.study_direction).joinedload(StudyDirection.education_type),
+                selectinload(StudyInfo.study_language),
+                selectinload(StudyInfo.study_form),
+                selectinload(StudyInfo.study_direction),
+                selectinload(StudyInfo.study_type),
+                selectinload(StudyInfo.education_type),
             )
             .where(StudyInfo.user_id == user_id)
         )
@@ -76,10 +93,10 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
                 study_info.study_direction, from_attributes=True
             ),
             education_type=EducationTypeResponse.model_validate(
-                study_info.study_direction.education_type, from_attributes=True
+                study_info.education_type, from_attributes=True
             ),
             study_type=StudyTypeResponse.model_validate(
-                study_info.study_direction.study_type, from_attributes=True
+                study_info.study_type, from_attributes=True
             ),
             graduate_year=study_info.graduate_year,
             certificate_path=study_info.certificate_path,

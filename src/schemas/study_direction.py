@@ -29,11 +29,6 @@ class StudyDirectionResponse(BaseModel):
     contract_sum: float 
     study_code: str 
     
-    study_form: StudyFormResponse
-    study_type: StudyTypeResponse
-    study_language: StudyLanguageResponse
-    education_type: EducationTypeResponse
-    
     
     model_config = ConfigDict(from_attributes=True)
 
