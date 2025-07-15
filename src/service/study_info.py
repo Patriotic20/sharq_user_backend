@@ -27,7 +27,7 @@ DEAL_DATA_MAPPING = {
     "name": "name",
     "contact_id": "contact_id",
     "StudyLanguage": "edu_lang_id",
-    "EducationType": "edu_type",
+    "StudyType": "edu_type",
     "StudyForm": "edu_form",
     "StudyDirection": "edu_direction",
     "edu_end_date": "edu_end_date",
