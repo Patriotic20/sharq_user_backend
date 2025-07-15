@@ -95,7 +95,7 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         await self._validate_data(study_info=study_info)
         
         self.lead_data["admission_id"] = study_info.study_direction_id
-        self.lead_data["edu_end_date"] = study_info.graduate_year
+        self.lead_data["edu_end_date"] = '2000-01-01'
         self.lead_data["certificate_link"] = study_info.certificate_path
         self.lead_data["passport_file_link"] = study_info.dtm_sheet
         
