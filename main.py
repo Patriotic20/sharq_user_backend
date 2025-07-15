@@ -29,6 +29,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://qabul2.sharqedu.uz",
+        "https://qabul.sharqedu.uz",
         "https://admin.sharqedu.uz",
         "https://qabul.nsumt.uz",
         "https://marketing.nsumt.uz"
