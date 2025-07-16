@@ -7,6 +7,11 @@ class SendVerificationCodeRequest(BaseModel):
     phone_number: str
 
 
+class ResetPasswordRequest(BaseModel):
+    verification_code: str
+    new_password: str
+
+
 class SendVerificationCodeResponse(BaseModel):
     message: str
     phone_number: str

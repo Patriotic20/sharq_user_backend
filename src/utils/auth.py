@@ -9,6 +9,7 @@ from fastapi.security import (
 )
 from sqlalchemy.orm import joinedload
 from sqlalchemy import select
+from src.schemas.sms import SendVerificationCodeRequest
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 from pydantic import ValidationError
@@ -17,7 +18,7 @@ from jwt.exceptions import InvalidTokenError
 from src.schemas.user import TokenData
 from src.core.config import settings
 from src.core.db import get_db
-from sharq_models.models import User
+from sharq_models.models import User #type: ignore
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -123,3 +124,20 @@ def require_roles(required_roles: List[str]):
         return await get_current_user_with_role(required_roles, token=token, db=db)
 
     return role_checker
+
+
+async def check_phone_not_exists(
+    request: SendVerificationCodeRequest,
+    db: AsyncSession = Depends(get_db)
+) -> SendVerificationCodeRequest:
+    stmt = select(User).where(User.phone_number == request.phone_number)
+    result = await db.execute(stmt)
+    existing_user = result.scalars().first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Phone number {request.phone_number} is already registered."
+        )
+
+    return request

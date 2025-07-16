@@ -14,7 +14,7 @@ from src.service.sms import SMSVerificationService
 from src.service import BasicCrud
 from src.utils import hash_password, authenticate_user, create_access_token
 from src.schemas.user import Token, RegisterData
-from sharq_models.models import User, AMOCrmLead
+from sharq_models.models import User, AMOCrmLead # type: ignore
 from src.schemas.amo import AMOCrmLead as AMOCrmLeadSchema
 from src.service.role import RoleService
 from src.core.config import settings

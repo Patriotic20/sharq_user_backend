@@ -2,14 +2,17 @@ import httpx
 import random
 import string
 from typing import Optional
-from fastapi import HTTPException
+from fastapi import HTTPException , status
 import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
+
+from src.utils.auth import hash_password
+
 from datetime import datetime, timedelta
 
 from src.core.config import settings
-from sharq_models.models.user import SMSVerificationSession
+from sharq_models.models.user import SMSVerificationSession , User 
 
 
 class SMSService:
@@ -196,3 +199,39 @@ class SMSVerificationService:
         if session:
             session.attempts += 1
             await self.db.commit()
+
+
+
+class SMSResetPassword:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+        self.sms_service = SMSVerificationService(db)
+        
+    async def reset_password(self, verification_code: str, new_password: str):
+        stmt = select(SMSVerificationSession).where(SMSVerificationSession.code == verification_code)
+        result = await self.db.execute(stmt)
+        sms_data = result.scalars().first()
+        
+        check_status = await self.sms_service.verify_code(code=verification_code, phone_number=sms_data.phone_number)
+
+
+        if not sms_data or check_status:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Invalid or expired verification code"
+            )
+        user_stmt = select(User).where(User.phone_number == sms_data.phone_number)
+        user_result = await self.db.execute(user_stmt)
+        user = user_result.scalars().first()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        user.password = hash_password(new_password)
+        
+        await self.db.commit()
+        await self.db.refresh(user)
+
+        return {"message": "Password successfully updated"}
