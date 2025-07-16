@@ -12,7 +12,7 @@ from src.schemas.sms import (
     RegisterWithVerificationRequest,
     RegisterWithVerificationResponse,
 )
-from src.utils.auth import check_phone_not_exists
+from src.utils.auth import check_phone_not_exists , check_phone_for_exists
 
 sms_router = APIRouter(prefix="/sms", tags=["SMS Verification"])
 
@@ -54,7 +54,7 @@ async def sms_callback(request: Request):
 
 @sms_router.post("/send_forgot_password_code", response_model=SendVerificationCodeResponse)
 async def send_forgot_password_code(
-    request: SendVerificationCodeRequest,
+    request: Annotated[SendVerificationCodeRequest, Depends(check_phone_for_exists)],
     service: Annotated[SMSVerificationService, Depends(get_sms_service)],
 ):
     result = await service.create_verification_session(request.phone_number)

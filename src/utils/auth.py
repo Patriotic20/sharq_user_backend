@@ -141,3 +141,21 @@ async def check_phone_not_exists(
         )
 
     return request
+
+async def check_phone_for_exists(
+    request: SendVerificationCodeRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(User).where(User.phone_number == request.phone_number)
+    result = await db.execute(stmt)
+    existing_user = result.scalars().first()
+
+    if not existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Phone number {request.phone_number} is not registered."
+        )
+
+    return request
+
+
