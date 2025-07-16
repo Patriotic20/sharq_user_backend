@@ -4,7 +4,7 @@ from src.api import api_router
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-# from src.core.docs_auth import DocsAuthMiddleware
+from src.core.docs_auth import DocsAuthMiddleware
 
 app = FastAPI(title="Sharq Admissions API", description="API for the Admissions system")
 
@@ -14,7 +14,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 app.include_router(api_router)
-# app.add_middleware(DocsAuthMiddleware)
+app.add_middleware(DocsAuthMiddleware)
 
 @app.get("/health", include_in_schema=False)
 def health_check():
