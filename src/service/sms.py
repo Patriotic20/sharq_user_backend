@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import HTTPException , status
 import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_ , desc
 
 from src.utils.auth import hash_password
 
@@ -208,14 +208,18 @@ class SMSResetPassword:
         self.sms_service = SMSVerificationService(db)
         
     async def reset_password(self, verification_code: str, new_password: str):
-        stmt = select(SMSVerificationSession).where(SMSVerificationSession.code == verification_code)
+        stmt = (
+        select(SMSVerificationSession)
+        .where(SMSVerificationSession.code == verification_code)
+            )
         result = await self.db.execute(stmt)
         sms_data = result.scalars().first()
         
         check_status = await self.sms_service.verify_code(code=verification_code, phone_number=sms_data.phone_number)
+        
 
 
-        if not sms_data or check_status:
+        if not sms_data or not check_status:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Invalid or expired verification code"
