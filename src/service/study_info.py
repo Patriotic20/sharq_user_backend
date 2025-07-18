@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sharq_models.models import StudyInfo, AMOCrmLead
+from sharq_models.models import StudyInfo, AMOCrmLead #type: ignore
 
 from src.core.config import settings
 from src.service.amo import update_lead_with_full_data, DealData
@@ -12,8 +12,8 @@ from fastapi import HTTPException, status
 from typing import Any, Type
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
-from sharq_models.database import Base
-from sharq_models.models import StudyLanguage, StudyForm, StudyDirection, StudyType, EducationType
+from sharq_models.database import Base #type: ignore
+from sharq_models.models import StudyLanguage, StudyForm, StudyDirection, StudyType, EducationType #type: ignore
 
 from src.schemas.study_language import StudyLanguageResponse
 from src.schemas.study_form import StudyFormResponse
@@ -106,15 +106,15 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         
     async def _validate_data(self, study_info: StudyInfoCreate):
         if not await self._check_exist(StudyLanguage, "id", study_info.study_language_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study language not found")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O'qish tili topilmadi")
         if not await self._check_exist(StudyForm, "id", study_info.study_form_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study form not found")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O'qish shakli topilmadi")
         if not await self._check_exist(StudyDirection, "id", study_info.study_direction_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study direction not found")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O'qish yo'nalishi topilmadi")
         if not await self._check_exist(StudyType, "id", study_info.study_type_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Study type not found")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O'qish turi topilmadi")
         if not await self._check_exist(EducationType, "id", study_info.education_type_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Education type not found")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ta'lim turi topilmadi")
         
     async def _check_exist(self, model: Type[Base], field_name: str, field_value: Any):
         existing_data = await super().get_by_field(model=model, field_name=field_name, field_value=field_value)

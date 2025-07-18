@@ -92,13 +92,13 @@ async def get_current_user_with_role(
 
     if not user.role:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User has no role assigned"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Foydalanuvchiga hech qanday rol biriktirilmagan"
         )
 
     if user.role.name not in required_roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Access denied. Required roles: {required_roles}",
+            detail=f"Kirish rad etildi. Talab qilinadigan rollar: {required_roles}",
         )
 
     return user
@@ -137,7 +137,7 @@ async def check_phone_not_exists(
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Phone number {request.phone_number} is already registered."
+            detail=f"{request.phone_number} raqamli telefon allaqachon ro'yxatdan o'tgan."
         )
 
     return request
@@ -153,7 +153,7 @@ async def check_phone_for_exists(
     if not existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Phone number {request.phone_number} is not registered."
+            detail=f"{request.phone_number} raqamli telefon ro'yxatdan o'tmagan."
         )
 
     return request

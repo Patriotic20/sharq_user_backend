@@ -5,9 +5,7 @@ from typing import Dict, List, Optional, Any, Union, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-from sharq_models import PassportData
-
-from src.schemas.passport_data import PassportDataBase
+from sharq_models import PassportData #type: ignore
 
 
 logging.basicConfig(level=logging.INFO)

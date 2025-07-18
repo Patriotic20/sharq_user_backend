@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks
-from datetime import date
+from fastapi import APIRouter, Depends
 from src.service.passport_data import PassportDataCrud
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.passport_data import (
@@ -8,7 +7,7 @@ from src.schemas.passport_data import (
     PassportDataCreateRequest,
 )
 from src.core.db import get_db
-from sharq_models.models import User
+from sharq_models.models import User #type: ignore
 from src.utils.auth import require_roles
 from typing import Annotated
 

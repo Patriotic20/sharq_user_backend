@@ -35,7 +35,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         if await self.get_by_field(
             model=User, field_name="phone_number", field_value=user_data.phone_number
         ):
-            raise HTTPException(status_code=400, detail="User already exists")
+            raise HTTPException(status_code=400, detail="Foydalanuvchi allaqachon mavjud")
 
         role_service = RoleService(self.db)
         if user_data.role_id:
@@ -57,7 +57,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         await self.handle_initial_lead(result.id, user_data.phone_number)
 
         return dict(
-            message="User registered successfully",
+            message="Foydalanuvchi muvaffaqiyatli ro'yxatdan o'tdi",
             data={
                 "user_id": result.id,
                 "phone_number": result.phone_number,
@@ -92,7 +92,7 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         )
         if not user:
             raise HTTPException(
-                status_code=400, detail="Incorrect username or password"
+                status_code=400, detail="Foydalanuvchi login yoki parol noto'g'ri"
             )
 
         access_token = create_access_token(

@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from src.service import BasicCrud
-from sharq_models.models import (
+from sharq_models.models import ( # type: ignore
     Application,
     PassportData,
     StudyInfo
@@ -81,7 +81,7 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
         if not application:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Application not found"
+                detail="Ariza topilmadi"
             )
 
         return ApplicationResponse.model_validate(application)

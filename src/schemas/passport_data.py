@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
-from typing import Optional
+
 
 
 class PassportDataBase(BaseModel):

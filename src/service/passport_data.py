@@ -1,7 +1,7 @@
-from fastapi import HTTPException, status, BackgroundTasks
+from fastapi import HTTPException, status
 from src.service.amo import update_lead_with_passport_data
 from src.service import BasicCrud
-from sharq_models.models import PassportData, AMOCrmLead
+from sharq_models.models import PassportData, AMOCrmLead #type: ignore
 from src.schemas.passport_data import (
     PassportDataBase,
     PassportDataCreate,
@@ -92,12 +92,12 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
 
         if not passport_data_info:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Passport data not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pasport ma'lumotlari topilmadi"
             )
         if passport_data_info.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not authorized to access this resource",
+                detail="Foydalanuvchiga ushbu resursga kirishga ruxsat berilmagan",
             )
 
         return passport_data_info

@@ -5,14 +5,14 @@ from typing import Optional
 from fastapi import HTTPException , status
 import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_ , desc
+from sqlalchemy import select, and_ 
 
 from src.utils.auth import hash_password
 
 from datetime import datetime, timedelta
 
 from src.core.config import settings
-from sharq_models.models.user import SMSVerificationSession , User 
+from sharq_models.models.user import SMSVerificationSession , User #type: ignore
 
 
 class SMSService:

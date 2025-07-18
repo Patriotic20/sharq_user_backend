@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sharq_models.models.user import Role
+from sharq_models.models.user import Role 
 from src.schemas.role import RoleBase, RoleCreate, RoleResponse
 from src.service import BasicCrud
 

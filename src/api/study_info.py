@@ -8,7 +8,7 @@ from src.schemas.study_info import (
     StudyInfoBase,
 )
 from src.core.db import get_db
-from sharq_models.models import User
+from sharq_models.models import User # type: ignore
 from src.utils.auth import require_roles
 from typing import Annotated
 

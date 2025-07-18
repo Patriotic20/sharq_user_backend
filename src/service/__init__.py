@@ -84,15 +84,32 @@ class BasicCrud(Generic[ModelType, SchemaType]):
             await self.db.rollback()
             raise e
         
-    async def update_by_field(self, model: Type[ModelType], field_name: str, field_value: Any, obj_items: SchemaType):
+    async def update_by_field(
+        self,
+        model: Type[ModelType],
+        field_name: str,
+        field_value: Any,
+        obj_items: SchemaType
+    ):
         try:
             db_obj = await self.get_by_field(model, field_name, field_value)
             if not db_obj:
                 return None
-            for key, value in obj_items.model_dump(exclude_unset=True).items():
+
+            update_data = obj_items.model_dump(exclude_unset=True)
+
+            for key, value in update_data.items():
+
+                if value in [None, "", "string"]:
+                    continue
+                if key.endswith("_id") and value == 0:
+                    continue
                 setattr(db_obj, key, value)
+
             await self.db.commit()
+            await self.db.refresh(db_obj)
             return db_obj
+
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise e
