@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sharq_models.models.user import Role 
+from sharq_models.models.user import Role #type: ignore
 from src.schemas.role import RoleBase, RoleCreate, RoleResponse
 from src.service import BasicCrud
 
@@ -17,7 +17,7 @@ class RoleService(BasicCrud[Role, RoleBase]):
         if existing_role:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Role with this name already exists",
+                detail="Ushbu nom bilan rol allaqachon mavjud",
             )
 
         return await super().create(model=Role, obj_items=role_data)
@@ -26,7 +26,7 @@ class RoleService(BasicCrud[Role, RoleBase]):
         role = await super().get_by_id(model=Role, item_id=role_id)
         if not role:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Rol topilmadi"
             )
         return role
 

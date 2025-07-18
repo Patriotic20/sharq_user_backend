@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.service.application import ApplicationCrud
-from src.schemas.application import ApplicationResponse
-from sharq_models.models import User
+from sharq_models.models import User # type: ignore
 from src.core.db import get_db
 from src.utils.auth import require_roles
 

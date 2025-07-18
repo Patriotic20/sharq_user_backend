@@ -37,7 +37,7 @@ class SMSService:
                 return response.json().get("data").get("token")
             else:
                 raise HTTPException(
-                    status_code=500, detail="Failed to get bearer token"
+                    status_code=500, detail="Bearer tokenini olib bo'lmadi"
                 )
 
     async def send_sms(self, phone_number: str, message: str) -> bool:
@@ -80,7 +80,7 @@ class SMSService:
         success = await self.send_sms(phone_number, message)
         if not success:
             raise HTTPException(
-                status_code=500, detail="Failed to send SMS verification code"
+                status_code=500, detail="SMS tasdiqlash kodini yuborib bo'lmadi"
             )
 
         return code
@@ -113,7 +113,7 @@ class SMSVerificationService:
         await self.store_verification_session(session_data)
 
         return {
-            "message": "Verification code sent",
+            "message": "Tasdiqlash kodi yuborildi",
             "phone_number": phone_number,
             "expires_at": session_data["expires_at"],
         }
@@ -123,15 +123,15 @@ class SMSVerificationService:
 
         if not session:
             raise HTTPException(
-                status_code=400, detail="No active verification session found"
+                status_code=400, detail="Faol tekshirish seansi topilmadi"
             )
 
         if session.expires_at < datetime.now():
-            raise HTTPException(status_code=400, detail="Verification code has expired")
+            raise HTTPException(status_code=400, detail="Tasdiqlash kodi muddati tugadi")
 
         if session.code != code:
             await self.increment_attempts(phone_number)
-            raise HTTPException(status_code=400, detail="Invalid verification code")
+            raise HTTPException(status_code=400, detail="Tasdiqlash kodi noto'g'ri")
 
         await self.mark_session_verified(phone_number)
 
@@ -222,7 +222,7 @@ class SMSResetPassword:
         if not sms_data or not check_status:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invalid or expired verification code"
+                detail="Noto'g'ri yoki muddati o'tgan tasdiqlash kodi"
             )
         user_stmt = select(User).where(User.phone_number == sms_data.phone_number)
         user_result = await self.db.execute(user_stmt)
@@ -231,11 +231,11 @@ class SMSResetPassword:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail="Foydalanuvchi topilmadi"
             )
         user.password = hash_password(new_password)
         
         await self.db.commit()
         await self.db.refresh(user)
 
-        return {"message": "Password successfully updated"}
+        return {"message": "Parol muvaffaqiyatli yangilandi"}
