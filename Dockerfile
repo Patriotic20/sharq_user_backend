@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libpango-1.0-0 \
     libcairo2 \
-    libgdk-pixbuf2.0-0 \
-    libgobject-2.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libgobject-2.0-dev \
     libglib2.0-0 \
     git \
     curl \
