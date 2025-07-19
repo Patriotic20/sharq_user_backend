@@ -6,7 +6,7 @@ from sharq_models.models import User  # type: ignore
 from src.core.db import get_db
 from typing import Annotated
 from src.utils.auth import require_roles
-from service.contract import ReportService
+from src.service.contract import ReportService
 
 report_router = APIRouter(
     prefix="/reports",
