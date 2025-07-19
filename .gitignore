@@ -13,6 +13,9 @@ uploads/
 .idea 
 .vscode
 
+
+media/
+
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
