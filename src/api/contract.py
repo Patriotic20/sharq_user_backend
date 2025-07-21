@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated
 
 from sharq_models.models import User  # type: ignore
 from src.core.db import get_db
-from typing import Annotated
 from src.utils.auth import require_roles
 from src.service.contract import ReportService
 
@@ -33,7 +33,11 @@ async def download_report(
         return StreamingResponse(
             pdf_file,
             media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=report_{current_user.id}.pdf"}
+            headers={
+                "Content-Disposition": f"attachment; filename=report_{current_user.id}.pdf"
+            }
         )
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
