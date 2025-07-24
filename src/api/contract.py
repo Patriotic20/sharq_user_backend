@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends 
+from fastapi import APIRouter, Depends , HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.db import get_db
 from src.service.contract import ReportService
@@ -17,17 +17,36 @@ def get_report_service(db: AsyncSession = Depends(get_db)):
 
 
 
-@report_router.get("/download/ikki/{user_id}")
-async def download_ikki_pdf(
+
+@report_router.get("/download/two-side")
+async def download_two_side_pdf(
     service: Annotated[ReportService, Depends(get_report_service)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
 ):
-    filename, content = await service.download_pdf(user_id=current_user.id)
-
+    result = await service.get_two_side_report(user_id=current_user.id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Two-side contract not found")
+    
+    filename, content = result
     return Response(
         content=content,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f"attachment; filename={filename}"
-        }
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@report_router.get("/download/three-side/{user_id}")
+async def download_three_side_pdf(
+    service: Annotated[ReportService, Depends(get_report_service)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    result = await service.get_three_side_report(user_id=current_user.id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Three-side contract not found")
+    
+    filename, content = result
+    return Response(
+        content=content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
