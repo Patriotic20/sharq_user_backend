@@ -18,7 +18,7 @@ def get_report_service(db: AsyncSession = Depends(get_db)):
 
 
 
-@report_router.get("/download/two-side")
+@report_router.get("/download/two_side")
 async def download_two_side_pdf(
     service: Annotated[ReportService, Depends(get_report_service)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
@@ -35,7 +35,7 @@ async def download_two_side_pdf(
     )
 
 
-@report_router.get("/download/three-side/{user_id}")
+@report_router.get("/download/three_side")
 async def download_three_side_pdf(
     service: Annotated[ReportService, Depends(get_report_service)],
     current_user: Annotated[User, Depends(require_roles(["user"]))],
