@@ -23,6 +23,14 @@ class PassportDataCrud(BasicCrud[PassportData, PassportDataBase]):
         user_id: int,
     ):
         passport_data_client = PassportDataClient()
+        
+        existing_passport_data = await super().get_by_field(
+            model=PassportData, field_name="user_id", field_value=user_id
+        )
+        if existing_passport_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Passport ma'lumotlari allaqachon mavjud"
+            )
 
         passport_data_response = await passport_data_client.get_passport_data(
             passport_series_number=passport_data_item.passport_series_number,
