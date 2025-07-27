@@ -180,8 +180,8 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         return await self._get_with_join(user_id=user_id)
     
     
-    async def get_study_direction_list(self) -> StudyDirectionResponse:
-        return await self._get_all(StudyDirection)
+    async def get_study_direction_list(self, study_form_id: int) -> StudyDirectionResponse:
+        return await self._get_all(StudyDirection, filters={"study_form_id": study_form_id})
     
     async def get_study_type_list(self) -> StudyTypeResponse:
         return await self._get_all(StudyType)

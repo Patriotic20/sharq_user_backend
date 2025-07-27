@@ -55,9 +55,10 @@ async def update_application(
 
 @application_router.get("/study_direction", tags=["Study Direction"])
 async def get_study_direction_list(
+    study_form_id: int,
     service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
 ):
-    return await service.get_study_direction_list()
+    return await service.get_study_direction_list(study_form_id=study_form_id)
 
 
 @application_router.get("/study_type", tags=["Study Type"])

@@ -5,6 +5,9 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from src.core.docs_auth import DocsAuthMiddleware
+from src.core.model_config import configure_models
+
+configure_models()
 
 app = FastAPI(title="Sharq Admissions API", description="API for the Admissions system")
 
