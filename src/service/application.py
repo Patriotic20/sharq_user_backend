@@ -85,3 +85,6 @@ class ApplicationCrud(BasicCrud[Application, ApplicationBase]):
             )
 
         return ApplicationResponse.model_validate(application)
+    
+    
+

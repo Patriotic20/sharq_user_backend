@@ -87,3 +87,10 @@ async def get_education_type_list(
     service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
 ):
     return await service.get_education_type_list()
+
+@application_router.get("/application_status" , tags=["Application"])
+async def get_status(
+    service: Annotated[StudyInfoCrud, Depends(get_service_crud)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.get_user_application_status(user_id=current_user.id)

@@ -196,4 +196,10 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         return await self._get_all(EducationType)
     
     
-    
+    async def get_user_application_status(self, user_id: int):
+        user_data = await super().get_by_field(model=StudyInfo , field_name="user_id", field_value=user_id)
+        if not user_data:
+            return False
+        if user_data:
+            return True
+        
