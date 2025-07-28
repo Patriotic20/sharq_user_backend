@@ -50,3 +50,10 @@ async def download_three_side_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+    
+@report_router.get("/get_status")
+async def get_user_comtract_status(
+    service: Annotated[ReportService, Depends(get_report_service)],
+    current_user: Annotated[User, Depends(require_roles(["user"]))],
+):
+    return await service.check_by_status(user_id=current_user.id)

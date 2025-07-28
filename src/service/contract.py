@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sharq_models.models import Contract  # type: ignore
 from src.service import BasicCrud
@@ -43,3 +43,12 @@ class ReportService(BasicCrud):
             if contract.file_path and "three_side" in contract.file_path:
                 return await self._download_from_path(contract.file_path)
         return None
+    
+    async def check_by_status(self , user_id: int):
+        contract_status = await super().get_by_field(model=Contract , field_name="user_id" , field_value=user_id)
+        if not contract_status:
+            return False
+        if contract_status:
+            return True
+            
+
