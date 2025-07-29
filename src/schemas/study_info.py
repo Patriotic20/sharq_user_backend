@@ -4,7 +4,7 @@ from .study_form import StudyFormResponse
 from .study_direction import StudyDirectionResponse
 from .education_type import EducationTypeResponse
 from .study_type import StudyTypeResponse
-
+from .passport_data import PassportDataResponse
 
 class StudyInfoBase(BaseModel):
     study_language_id: int
@@ -34,6 +34,7 @@ class StudyInfoResponse(BaseModel):
     study_direction: StudyDirectionResponse
     education_type: EducationTypeResponse
     study_type: StudyTypeResponse
+    passport_data: PassportDataResponse
     
     graduate_year: str | None = None
     certificate_path: str  | None = None

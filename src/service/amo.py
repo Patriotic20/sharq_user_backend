@@ -87,6 +87,7 @@ class DealData:
     admission_id: int
     certificate_link: str
     passport_file_link: str
+    price: float
 
 
 class AmoCRMConfig:
@@ -606,6 +607,7 @@ class AmoCRMService:
                 f"leads/{deal_id}",
                 json_data={
                     "name": deal_data.name,
+                    "price": int(deal_data.price),
                     "custom_fields_values": custom_fields_values,
                 },
             )

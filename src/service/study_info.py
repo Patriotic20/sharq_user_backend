@@ -1,6 +1,8 @@
+from sharq_models import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from sharq_models.models import StudyInfo, AMOCrmLead #type: ignore
 
+from src.schemas.passport_data import PassportDataResponse
 from src.core.config import settings
 from src.service.amo import update_lead_with_full_data, DealData
 from src.schemas.study_info import (
@@ -45,17 +47,20 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         
     def _format_graduate_year(self, graduate_year: Any) -> str:
         if not graduate_year:
-            return "01.01.2025"
+            return "2025-01-01"
             
         year_str = str(graduate_year).strip()
         
+        # If already in DD.MM.YYYY format, convert to YYYY-MM-DD
         if re.match(r'^\d{2}\.\d{2}\.\d{4}$', year_str):
-            return year_str
+            day, month, year = year_str.split('.')
+            return f"{year}-{month}-{day}"
             
+        # If just year, assume June 1st
         if re.match(r'^\d{4}$', year_str):
-            return f"01.06.{year_str}"
+            return f"{year_str}-06-01"
             
-        return "01.01.2025"
+        return "2025-01-01"
         
     async def _get_lead(self, user_id: int):
         lead = await super().get_by_field(
@@ -73,7 +78,7 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
             update_lead_with_full_data(
                 deal_id=lead.lead_id,
                 deal_data=DealData(**{
-                    "name": "Unnamed",
+                    "name": f"{application.passport_data.first_name} {application.passport_data.last_name}",
                     "contact_id": lead.contact_id,
                     **self.lead_data,
                 }),
@@ -135,7 +140,8 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         existing_data = await super().get_by_field(model=model, field_name=field_name, field_value=field_value)
         if model.__name__ in DEAL_DATA_MAPPING:
             self.lead_data[DEAL_DATA_MAPPING[model.__name__]] = existing_data.name if existing_data else None
-            self.lead_data["price"] = existing_data.price if existing_data else 0
+            if model.__name__ == "StudyDirection":
+                self.lead_data["price"] = existing_data.contract_sum if existing_data else 0
         return existing_data is not None
         
     async def _get_with_join(self, user_id: int) -> StudyInfoResponse:
@@ -147,6 +153,7 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
                 selectinload(StudyInfo.study_direction),
                 selectinload(StudyInfo.study_type),
                 selectinload(StudyInfo.education_type),
+                selectinload(StudyInfo.user).selectinload(User.passport_data),
             )
             .where(StudyInfo.user_id == user_id)
         )
@@ -179,6 +186,9 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
             ),
             study_type=StudyTypeResponse.model_validate(
                 study_info.study_type, from_attributes=True
+            ),
+            passport_data=PassportDataResponse.model_validate(
+                study_info.user.passport_data, from_attributes=True
             ),
             graduate_year=study_info.graduate_year,
             certificate_path=study_info.certificate_path,
