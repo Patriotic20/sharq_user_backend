@@ -22,6 +22,7 @@ from src.schemas.study_type import StudyTypeResponse
 from src.schemas.education_type import EducationTypeResponse
 
 from src.service import BasicCrud
+import re
 
 DEAL_DATA_MAPPING = {
     "name": "name",
@@ -41,6 +42,20 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
         self.lead_data = {}
+        
+    def _format_graduate_year(self, graduate_year: Any) -> str:
+        if not graduate_year:
+            return "01.01.2025"
+            
+        year_str = str(graduate_year).strip()
+        
+        if re.match(r'^\d{2}\.\d{2}\.\d{4}$', year_str):
+            return year_str
+            
+        if re.match(r'^\d{4}$', year_str):
+            return f"01.06.{year_str}"
+            
+        return "01.01.2025"
         
     async def _get_lead(self, user_id: int):
         lead = await super().get_by_field(
@@ -95,7 +110,7 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         await self._validate_data(study_info=study_info)
         
         self.lead_data["admission_id"] = study_info.study_direction_id
-        self.lead_data["edu_end_date"] = '2000-01-01'
+        self.lead_data["edu_end_date"] = self._format_graduate_year(study_info.graduate_year)
         self.lead_data["certificate_link"] = study_info.certificate_path
         self.lead_data["passport_file_link"] = study_info.dtm_sheet
         
@@ -120,6 +135,7 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
         existing_data = await super().get_by_field(model=model, field_name=field_name, field_value=field_value)
         if model.__name__ in DEAL_DATA_MAPPING:
             self.lead_data[DEAL_DATA_MAPPING[model.__name__]] = existing_data.name if existing_data else None
+            self.lead_data["price"] = existing_data.price if existing_data else 0
         return existing_data is not None
         
     async def _get_with_join(self, user_id: int) -> StudyInfoResponse:

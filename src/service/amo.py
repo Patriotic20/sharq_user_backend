@@ -55,6 +55,7 @@ PIPELINE_TYPES = {
     "FIRST_CREATE": "first_create",
     "LEAD_ACCEPTED": "lead_accepted",
     "LEAD_REJECTED": "lead_rejected",
+    "GET_CONTRACT": "get_contract",
 }
 
 
@@ -105,6 +106,10 @@ class AmoCRMConfig:
             PIPELINE_TYPES["LEAD_REJECTED"]: {
                 "pipeline_id": config_data.get("lead_rejected_pipline_id"),
                 "status_id": config_data.get("lead_rejected_status_id"),
+            },
+            PIPELINE_TYPES["GET_CONTRACT"]: {
+                "pipeline_id": config_data.get("get_contract_pipline_id"),
+                "status_id": config_data.get("get_contract_status_id"),
             },
         }
 
@@ -486,6 +491,9 @@ class AmoCRMService:
             pipeline_config["pipeline_id"], pipeline_config["status_id"], lead_id
         )
         return result is not None
+    
+    def move_lead_to_get_contact(self, lead_id: int) -> bool:
+        return self._update_lead_with_pipeline(lead_id, PIPELINE_TYPES["GET_CONTRACT"])
 
     def accept_lead(self, lead_id: int) -> bool:
         return self._update_lead_with_pipeline(lead_id, PIPELINE_TYPES["LEAD_ACCEPTED"])

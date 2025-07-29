@@ -45,6 +45,8 @@ class Settings(BaseSettings):
             "lead_accepted_status_id": 76961538,
             "lead_rejected_pipline_id": 9646446,
             "lead_rejected_status_id": 76961610,
+            "get_contract_pipline_id": 9646446,
+            "get_contract_status_id": 78753886,
         }
 
 
