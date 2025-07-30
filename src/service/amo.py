@@ -87,7 +87,7 @@ class DealData:
     admission_id: int
     certificate_link: str
     passport_file_link: str
-    price: float
+    price: float = 0
 
 
 class AmoCRMConfig:
