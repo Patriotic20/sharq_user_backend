@@ -78,7 +78,7 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
             update_lead_with_full_data(
                 deal_id=lead.lead_id,
                 deal_data=DealData(**{
-                    "name": f"{application.passport_data.first_name} {application.passport_data.last_name}",
+                    "name": f"{lead.contact_data.get('first_name', '')} {lead.contact_data.get('last_name', '')}",
                     "contact_id": lead.contact_id,
                     **self.lead_data,
                 }),
@@ -153,7 +153,6 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
                 selectinload(StudyInfo.study_direction),
                 selectinload(StudyInfo.study_type),
                 selectinload(StudyInfo.education_type),
-                selectinload(StudyInfo.user).selectinload(User.passport_data),
             )
             .where(StudyInfo.user_id == user_id)
         )
@@ -186,9 +185,6 @@ class StudyInfoCrud(BasicCrud[StudyInfo, StudyInfoCreate]):
             ),
             study_type=StudyTypeResponse.model_validate(
                 study_info.study_type, from_attributes=True
-            ),
-            passport_data=PassportDataResponse.model_validate(
-                study_info.user.passport_data, from_attributes=True
             ),
             graduate_year=study_info.graduate_year,
             certificate_path=study_info.certificate_path,
