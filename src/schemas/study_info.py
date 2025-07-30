@@ -34,7 +34,6 @@ class StudyInfoResponse(BaseModel):
     study_direction: StudyDirectionResponse
     education_type: EducationTypeResponse
     study_type: StudyTypeResponse
-    passport_data: PassportDataResponse
     
     graduate_year: str | None = None
     certificate_path: str  | None = None
