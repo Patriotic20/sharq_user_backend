@@ -72,17 +72,18 @@ class UserAuthService(BasicCrud[User, RegisterData]):
         )
         if not lead:
             initial_lead = create_initial_lead(phone_number, settings.amo_crm_config)
-            await self.create(
-                model=AMOCrmLead,
-                obj_items=AMOCrmLeadSchema(
-                    user_id=user_id,
-                    contact_id=initial_lead.get("contact_id"),
-                    lead_id=initial_lead.get("deal_id"),
-                    phone_number=phone_number,
-                    contact_data={},
-                    lead_data={},
-                ),
-            )
+            if initial_lead:
+                await self.create(
+                    model=AMOCrmLead,
+                    obj_items=AMOCrmLeadSchema(
+                        user_id=user_id,
+                        contact_id=initial_lead.get("contact_id"),
+                        lead_id=initial_lead.get("deal_id"),
+                        phone_number=phone_number,
+                        contact_data={},
+                        lead_data={},
+                    ),
+                )
 
     async def login(
         self, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
