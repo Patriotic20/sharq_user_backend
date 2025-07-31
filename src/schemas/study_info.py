@@ -28,6 +28,7 @@ class StudyInfoCreate(StudyInfoBase):
 class StudyInfoResponse(BaseModel):
     id: int
     user_id: int
+    is_approved: bool | None = False
 
     study_language: StudyLanguageResponse
     study_form: StudyFormResponse
